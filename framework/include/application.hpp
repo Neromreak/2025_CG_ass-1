@@ -8,36 +8,36 @@
 #include <map>
 
 struct GLFWwindow;
-// gpu representation of model
+// GPU representation of model
 class Application {
  public:
   template<typename T>
   static void run(int argc, char* argv[], unsigned ver_major, unsigned ver_minor);
 
-  // allocate and initialize objects
+  // Allocate and initialize objects
   Application(std::string const& resource_path);
-  // free shader resources
+  // Free shader resources
   virtual ~Application();
 
-  // update viewport and field of view
+  // Update viewport and field of view
   void resize_callback(unsigned width, unsigned height);
-  // handle key input
+  // Handle key input
   void key_callback(GLFWwindow* window, int key, int action, int mods);
-  //handle mouse movement input
+  // Handle mouse movement input
   void mouse_callback(GLFWwindow* window, double pos_x, double pos_y);
-  // recompile shaders form source files
+  // Recompile shaders form source files
   void reloadShaders(bool throwing);
 
-// functiosn which are implemented in derived classes
-  // update uniform locations and values
+// Functions which are implemented in derived classes
+  // Update uniform locations and values
   inline virtual void uploadUniforms() {};
-  // react to key input
+  // React to key input
   inline virtual void keyCallback(int key, int action, int mods) {};
-  //handle delta mouse movement input
+  // Handle delta mouse movement input
   inline virtual void mouseCallback(double pos_x, double pos_y) {};
-  // update framebuffer textures
+  // Update framebuffer textures
   inline virtual void resizeCallback(unsigned width, unsigned height) {};
-  // draw all objects
+  // Draw all objects
   virtual void render() const = 0;
 
  protected:
@@ -45,10 +45,10 @@ class Application {
 
   std::string m_resource_path; 
 
-  // container for the shader programs
+  // Container for the shader programs
   std::map<std::string, shader_program> m_shaders{};
 
-  // resolution when 
+  // Resolution when 
   static const glm::uvec2 initial_resolution; 
   static const float initial_aspect_ratio; 
 };
@@ -67,24 +67,24 @@ void Application::run(int argc, char* argv[], unsigned ver_major, unsigned ver_m
 
     window_handler::set_callback_object(window, application);
 
-    // do intial shader load an uniform upload
+    // Do intial shader load an uniform upload
     application->reloadShaders(true);
 
-    // enable depth testing
+    // Enable depth testing
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     
-    // rendering loop
+    // Rendering loop
     while (!glfwWindowShouldClose(window)) {
-      // query input
+      // Query input
       glfwPollEvents();
-      // clear buffer
+      // Clear buffer
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-      // draw geometry
+      // Draw geometry
       application->render();
-      // swap draw buffer to front
+      // Swap draw buffer to front
       glfwSwapBuffers(window);
-      // display fps
+      // Display fps
       window_handler::show_fps(window);
     }
 

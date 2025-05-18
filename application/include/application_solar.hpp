@@ -5,40 +5,40 @@
 #include "model.hpp"
 #include "structs.hpp"
 
-// gpu representation of model
+// GPU representation of model
 class ApplicationSolar : public Application {
  public:
-  // allocate and initialize objects
+  // Allocate and initialize objects
   ApplicationSolar(std::string const& resource_path);
-  // free allocated objects
+  // Free allocated objects
   ~ApplicationSolar();
 
-  // react to key input
+  // React to key input
   void keyCallback(int key, int action, int mods);
-  //handle delta mouse movement input
+  // Handle delta mouse movement input
   void mouseCallback(double pos_x, double pos_y);
-  //handle resizing
+  // Handle resizing
   void resizeCallback(unsigned width, unsigned height);
 
-  // draw all objects
+  // Draw all objects
   void render() const;
 
  protected:
   void initializeShaderPrograms();
   void initializeGeometry();
-  // update uniform values
+  // Update uniform values
   void uploadUniforms();
-  // upload projection matrix
+  // Upload projection matrix
   void uploadProjection();
-  // upload view matrix
+  // Upload view matrix
   void uploadView();
 
-  // cpu representation of model
+// CPU representation of model
   model_object planet_object;
   
-  // camera transform matrix
+  // Camera transform matrix
   glm::fmat4 m_view_transform;
-  // camera projection matrix
+  // Camera projection matrix
   glm::fmat4 m_view_projection;
 };
 
