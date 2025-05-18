@@ -1,3 +1,6 @@
+#ifndef GEOMETRY_NODE
+#define GEOMETRY_NODE
+
 #include "node.hpp"
 #include "structs.hpp"
 
@@ -18,3 +21,5 @@ public:
 private:
   model_object geometry_;
 };
+
+#endif

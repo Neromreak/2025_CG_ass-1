@@ -1,11 +1,15 @@
+#ifndef SCENE_GRAPH
+#define SCENE_GRAPH
+
 #include <string>
 #include "node.hpp"
+
 
 class SceneGraph
 {
 public:
   // Make singleton by having one instance
-  static SceneGraph& getInstance()
+  static SceneGraph& get_instance()
   {
     if (!instance_)
     {
@@ -28,9 +32,9 @@ public:
   {
     return *root_;
   }
-  void set_root(Node const& root_in)
+  void set_root(Node* root_in)
   {
-    *root_ = root_in;
+    root_ = root_in;
   }
 
 private:
@@ -38,4 +42,15 @@ private:
   std::string name_{"Scene Graph"};
   Node* root_;
 
+  // Constructors (delete synthesized constructors and make default constructor private
+  // ...because class is supposed to be singleton)
+  SceneGraph() = default;
+  SceneGraph(SceneGraph const&) = delete;
+  SceneGraph& operator=(SceneGraph const&) = delete;
+
+  ~SceneGraph() = default;
 };
+
+SceneGraph* SceneGraph::instance_ = nullptr;
+
+#endif

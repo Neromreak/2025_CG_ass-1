@@ -1,3 +1,6 @@
+#ifndef CAMERA_NODE
+#define CAMERA_NODE
+
 #include "node.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -33,3 +36,5 @@ private:
   bool is_enabled_ = true;
   glm::fmat4 projection_matrix_;
 };
+
+#endif

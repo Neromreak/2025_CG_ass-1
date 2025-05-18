@@ -4,6 +4,11 @@
 #include "utils.hpp"
 #include "shader_loader.hpp"
 #include "model_loader.hpp"
+#include "scene_graph.hpp"
+#include "geometry_node.hpp"
+#include "camera_node.hpp"
+#include "point_light_node.hpp"
+#include "node.hpp"
 
 #include <glbinding/gl/gl.h>
 // Use gl definitions from glbinding 
@@ -36,49 +41,29 @@ ApplicationSolar::~ApplicationSolar() {
 }
 
 void ApplicationSolar::render() const {
-  // Bind shader to upload uniforms
-  glUseProgram(m_shaders.at("planet").handle);
+  for (int i = 0; i < 8; ++i)
+  {
+    // Bind shader to upload uniforms
+    glUseProgram(m_shaders.at("planet").handle);
 
-  // Add translation matrix with rotation and then translation
-  glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()) * 2, glm::fvec3{1.0f, 1.0f, 1.0f});
-  model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f});
+    // Add translation matrix with rotation and then translation
+    glm::fmat4 model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()) * (5+(5/(float)i)), glm::fvec3{0.0f, 1.0f, 0.0f});
+    model_matrix = glm::translate(model_matrix, glm::fvec3{0.0f, 0.0f, -1.0f * i});
 
-  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
-                     1, GL_FALSE, glm::value_ptr(model_matrix));
+    glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
+                       1, GL_FALSE, glm::value_ptr(model_matrix));
 
-  // Extra matrix for normal transformation to keep them orthogonal to surface
-  glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
-  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
-                     1, GL_FALSE, glm::value_ptr(normal_matrix));
+    // Extra matrix for normal transformation to keep them orthogonal to surface
+    glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
+    glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
+                       1, GL_FALSE, glm::value_ptr(normal_matrix));
 
-  // Bind the VAO to draw
-  glBindVertexArray(planet_object.vertex_AO);
+    // Bind the VAO to draw
+    glBindVertexArray(planet_object.vertex_AO);
 
-  // Draw bound vertex array using bound shader
-  glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
-
-  ///////////////////// TEST
-
-  // Bind shader to upload uniforms
-  glUseProgram(m_shaders.at("planet").handle);
-
-  // Add translation matrix with rotation and then translation
-  model_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime()) * 1, glm::fvec3{ 1.0f, 1.0f, 1.0f });
-  model_matrix = glm::translate(model_matrix, glm::fvec3{ 0.0f, 0.0f, -1.0f });
-
-  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ModelMatrix"),
-    1, GL_FALSE, glm::value_ptr(model_matrix));
-
-  // Extra matrix for normal transformation to keep them orthogonal to surface
-  normal_matrix = glm::inverseTranspose(glm::inverse(m_view_transform) * model_matrix);
-  glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("NormalMatrix"),
-    1, GL_FALSE, glm::value_ptr(normal_matrix));
-
-  // Bind the VAO to draw
-  glBindVertexArray(planet_object.vertex_AO);
-
-  // Draw bound vertex array using bound shader
-  glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+    // Draw bound vertex array using bound shader
+    glDrawElements(planet_object.draw_mode, planet_object.num_elements, model::INDEX.type, NULL);
+  }
 }
 
 void ApplicationSolar::uploadView() {
@@ -117,7 +102,7 @@ void ApplicationSolar::initializeShaderPrograms() {
   m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
 }
 
-// Load models
+// Load models (the raw model files containing the vertices information)
 void ApplicationSolar::initializeGeometry()
 {
   model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
@@ -184,6 +169,11 @@ void ApplicationSolar::resizeCallback(unsigned width, unsigned height) {
 
 
 // .exe entry point
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
+  SceneGraph* scene = &SceneGraph::get_instance();
+  Node root{ "root", nullptr, glm::fmat4{}, glm::fmat4{} };
+  scene->set_root(&root);
+
   Application::run<ApplicationSolar>(argc, argv, 3, 2);
 }

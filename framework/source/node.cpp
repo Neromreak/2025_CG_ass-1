@@ -1,6 +1,36 @@
 #include "node.hpp"
 
 // Constructors
+Node::Node(std::string const& name, std::string const& path, Node* parent, std::list<Node*> const& children,
+  int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform) :
+  name_{ name },
+  path_{ path },
+  parent_{ parent },
+  children_{ children },
+  depth_{ depth },
+  local_transform_{ local_transform },
+  world_transform_{ world_transform }
+{
+  if (parent != nullptr)
+  {
+    set_parent(parent);
+  }
+  for (Node* new_node : children)
+  {
+    add_children(new_node);
+  }
+}
+Node::Node(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform):
+  Node::Node(name, "no_path", parent, {}, -1, local_transform, world_transform)
+{ }
+
+Node::~Node()
+{
+  for (Node* node : children_)
+  {
+    delete node;
+  }
+}
 
 
 // Getter Setter
@@ -24,9 +54,13 @@ Node& Node::get_parent() const
 {
   return *parent_;
 }
-void Node::set_parent(Node const& parent_in)
+void Node::set_parent(Node* parent_in)
 {
-  *parent_ = parent_in;
+  if (parent_in != nullptr)
+  {
+    parent_ = parent_in;
+    parent_->children_.push_back(this);
+  }
 }
 std::list<Node*> const& Node::get_children() const
 {
@@ -59,9 +93,10 @@ void Node::set_world_transform(glm::fmat4 const& mat_in)
 {
   world_transform_ = mat_in;
 }
-void Node::add_children(Node& child)
+void Node::add_children(Node* child)
 {
-  children_.push_back(&child);
+  children_.push_back(child);
+  child->parent_ = this;
 }
 Node* Node::remove_children(std::string const& child_name)
 {
@@ -70,6 +105,7 @@ Node* Node::remove_children(std::string const& child_name)
     if (node->get_name() == child_name)
     {
       children_.remove(node);
+      node->parent_ = nullptr;
       return node;
     }
   }
