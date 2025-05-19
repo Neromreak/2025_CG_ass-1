@@ -12,6 +12,7 @@ class Node
 public:
   // Constructors
   Node() = default;
+  Node(std::string const& name, Node* parent);
   Node(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform);
   Node(std::string const& name, std::string const& path, Node* parent, std::list<Node*> const& children,
     int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform);

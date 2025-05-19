@@ -171,9 +171,63 @@ void ApplicationSolar::resizeCallback(unsigned width, unsigned height) {
 // .exe entry point
 int main(int argc, char* argv[])
 {
+  /////////////////////////// Scene Creation //////////////////////////////////
+  // Create scene graph and root
   SceneGraph* scene = &SceneGraph::get_instance();
   Node root{ "root", nullptr, glm::fmat4{}, glm::fmat4{} };
   scene->set_root(&root);
 
+  // Add planet holders to scene root
+  Node holder_mer{ "Mercury Holder", &root, glm::fmat4{}, glm::fmat4{} };
+
+  Node holder_ven{ "Venus Holder", &root, glm::fmat4{}, glm::fmat4{} };
+
+  Node holder_ear{ "Earth Holder", &root, glm::fmat4{}, glm::fmat4{} };
+  Node holder_moo{ "Moon Holder", &holder_ear, glm::fmat4{}, glm::fmat4{} };
+
+  Node holder_mar{ "Mars Holder", &root, glm::fmat4{}, glm::fmat4{} };
+
+  Node holder_jup{ "Jupiter Holder", &root, glm::fmat4{}, glm::fmat4{} };
+
+  Node holder_sat{ "Saturn Holder", &root, glm::fmat4{}, glm::fmat4{} };
+
+  Node holder_ura{ "Uranus Holder", &root, glm::fmat4{}, glm::fmat4{} };
+
+  Node holder_nep{ "Neptune Holder", &root, glm::fmat4{}, glm::fmat4{} };
+
+  // Add planets to planet holders
+  GeometryNode mer{ "Mercury", &holder_mer };
+
+  GeometryNode ven{ "Venus", &holder_ven };
+
+  GeometryNode ear{ "Earth", &holder_ear };
+  GeometryNode moo{ "Moon", &holder_moo };
+
+  GeometryNode mar{ "Mars", &holder_mar };
+
+  GeometryNode jup{ "Jupiter", &holder_jup };
+
+  GeometryNode sat{ "Saturn", &holder_sat };
+
+  GeometryNode ura{ "Uranus", &holder_ura };
+
+  GeometryNode nep{ "Neptune", &holder_nep };
+
+  // Add lighting and sun
+  PointLightNode light_sun{ "Sun light", &root };
+  GeometryNode sun{ "Sun", &light_sun };
+
+  // Add camera
+  CameraNode cam_main{ "Main Camera", &root };
+  
+
+  // Testing
+  const std::list<Node*>& temp = root.get_children();
+  for (Node* node : temp)
+  {
+    std::cout << node->get_name() << "\n";
+  }
+
+  // Start the render applicaton
   Application::run<ApplicationSolar>(argc, argv, 3, 2);
 }

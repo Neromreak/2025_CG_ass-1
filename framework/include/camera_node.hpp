@@ -9,6 +9,23 @@
 class CameraNode : public Node
 {
 public:
+  // Constructors
+  CameraNode() = default;
+  CameraNode(std::string const& name, Node* parent):
+    CameraNode::CameraNode(name, "no_path", parent, {}, -1, glm::fmat4{}, glm::fmat4{}, glm::fmat4{})
+  { }
+  CameraNode(std::string const& name, Node* parent, glm::fmat4 const& projection_matrix):
+    CameraNode::CameraNode(name, "no_path", parent, {}, -1, glm::fmat4{}, glm::fmat4{}, projection_matrix)
+  { }
+  CameraNode(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, glm::fmat4 const& projection_matrix):
+    CameraNode::CameraNode(name, "no_path", parent, {}, -1, local_transform, world_transform, projection_matrix)
+  { }
+  CameraNode(std::string const& name, std::string const& path, Node* parent, std::list<Node*> const& children,
+    int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, glm::fmat4 const& projection_matrix):
+    Node::Node(name, path, parent, children, depth, local_transform, world_transform),
+    projection_matrix_{ projection_matrix }
+  { }
+
   // Getter Setter
   bool is_perspective() const
   {

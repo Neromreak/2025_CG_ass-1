@@ -23,6 +23,10 @@ Node::Node(std::string const& name, std::string const& path, Node* parent, std::
 Node::Node(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform):
   Node::Node(name, "no_path", parent, {}, -1, local_transform, world_transform)
 { }
+Node::Node(std::string const& name, Node* parent) :
+  Node::Node(name, "no_path", parent, {}, -1, glm::fmat4{}, glm::fmat4{})
+{
+}
 
 Node::~Node()
 {
