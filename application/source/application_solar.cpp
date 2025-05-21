@@ -190,6 +190,8 @@ void ApplicationSolar::initializeScene()
   PointLightNode* light_sun = new PointLightNode{ "Sun light", root, local_transform, glm::fmat4{}, 0.0f, glm::vec3{}, 1.0f };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{3.0f});
   GeometryNode* sun = new GeometryNode{ "Sun", light_sun, local_transform, glm::fmat4{}, &planet_object};
+  
+  std::cout << "DEBUG: " << moo->get_path() << "\n" << moo->get_depth();
 
   // Add camera
   CameraNode* cam_main = new CameraNode{ "Main Camera", root };

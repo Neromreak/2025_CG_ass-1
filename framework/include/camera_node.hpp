@@ -14,8 +14,8 @@ public:
   CameraNode(std::string const& name, Node* parent);
   CameraNode(std::string const& name, Node* parent, glm::fmat4 const& projection_matrix);
   CameraNode(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, glm::fmat4 const& projection_matrix);
-  CameraNode(std::string const& name, std::string const& path, Node* parent, std::list<Node*> const& children,
-    int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, glm::fmat4 const& projection_matrix);
+  CameraNode(std::string const& name, Node* parent, std::list<Node*> const& children,
+    glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, glm::fmat4 const& projection_matrix);
 
   // Getter Setter
   bool is_perspective() const;

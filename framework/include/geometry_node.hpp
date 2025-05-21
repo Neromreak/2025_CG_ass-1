@@ -12,8 +12,8 @@ public:
   GeometryNode(std::string const& name, Node* parent);
   GeometryNode(std::string const& name, Node* parent, model_object const* geometry);
   GeometryNode(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, model_object const* geometry);
-  GeometryNode(std::string const& name, std::string const& path, Node* parent, std::list<Node*> const& children,
-    int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, model_object const* geometry);
+  GeometryNode(std::string const& name, Node* parent, std::list<Node*> const& children,
+    glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, model_object const* geometry);
 
   // Getter Setter
   model_object const* get_model() const;

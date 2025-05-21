@@ -11,8 +11,8 @@ public:
   PointLightNode(std::string const& name, Node* parent, glm::vec3 const& color, float intensity);
   PointLightNode(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform,
     float animation, glm::vec3 const& color, float intensity);
-  PointLightNode(std::string const& name, std::string const& path, Node* parent, std::list<Node*> const& children,
-    int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, glm::vec3 const& color, float intensity);
+  PointLightNode(std::string const& name, Node* parent, std::list<Node*> const& children,
+    glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, glm::vec3 const& color, float intensity);
 
   // Getter Setter
   glm::vec3 const& get_color() const;

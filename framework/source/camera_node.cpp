@@ -3,20 +3,20 @@
 
 // Constructors
 CameraNode::CameraNode(std::string const& name, Node* parent) :
-  CameraNode::CameraNode(name, "no_path", parent, {}, -1, glm::fmat4{}, glm::fmat4{}, 0.0f, glm::fmat4{})
+  CameraNode::CameraNode(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f, glm::fmat4{})
 {
 }
 CameraNode::CameraNode(std::string const& name, Node* parent, glm::fmat4 const& projection_matrix) :
-  CameraNode::CameraNode(name, "no_path", parent, {}, -1, glm::fmat4{}, glm::fmat4{}, 0.0f, projection_matrix)
+  CameraNode::CameraNode(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f, projection_matrix)
 {
 }
 CameraNode::CameraNode(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, glm::fmat4 const& projection_matrix) :
-  CameraNode::CameraNode(name, "no_path", parent, {}, -1, local_transform, world_transform, 0.0f, projection_matrix)
+  CameraNode::CameraNode(name, parent, {}, local_transform, world_transform, 0.0f, projection_matrix)
 {
 }
-CameraNode::CameraNode(std::string const& name, std::string const& path, Node* parent, std::list<Node*> const& children,
-  int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, glm::fmat4 const& projection_matrix) :
-  Node::Node(name, path, parent, children, depth, local_transform, world_transform, animation),
+CameraNode::CameraNode(std::string const& name, Node* parent, std::list<Node*> const& children,
+  glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, glm::fmat4 const& projection_matrix) :
+  Node::Node(name, parent, children, local_transform, world_transform, animation),
   projection_matrix_{ projection_matrix }
 { }
 

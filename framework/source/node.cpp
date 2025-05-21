@@ -1,13 +1,10 @@
 #include "node.hpp"
 
 // Constructors
-Node::Node(std::string const& name, std::string const& path, Node* parent, std::list<Node*> const& children,
-  int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation):
+Node::Node(std::string const& name, Node* parent, std::list<Node*> const& children, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation):
   name_{ name },
-  path_{ path },
   parent_{ parent },
   children_{ children },
-  depth_{ depth },
   local_transform_{ local_transform },
   world_transform_{ world_transform },
   animation_{animation}
@@ -20,12 +17,21 @@ Node::Node(std::string const& name, std::string const& path, Node* parent, std::
   {
     add_children(new_node);
   }
+  path_ = get_name();
+  depth_ = 0;
+  Node* parent_node = parent_;
+  while (parent_node != nullptr)
+  {
+    path_ += " > " + parent_node->get_name();
+    parent_node = &parent_node->get_parent();
+    depth_++;
+  }
 }
 Node::Node(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation):
-  Node::Node(name, "no_path", parent, {}, -1, local_transform, world_transform, animation)
+  Node::Node(name, parent, {}, local_transform, world_transform, animation)
 { }
 Node::Node(std::string const& name, Node* parent) :
-  Node::Node(name, "no_path", parent, {}, -1, glm::fmat4{}, glm::fmat4{}, 0.0f)
+  Node::Node(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f)
 { }
 
 Node::~Node()

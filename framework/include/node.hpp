@@ -24,8 +24,8 @@ public:
   Node() = default;
   Node(std::string const& name, Node* parent);
   Node(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation);
-  Node(std::string const& name, std::string const& path, Node* parent, std::list<Node*> const& children,
-    int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation);
+  Node(std::string const& name, Node* parent, std::list<Node*> const& children,
+    glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation);
   
   ~Node();
   
