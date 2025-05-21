@@ -201,32 +201,32 @@ void ApplicationSolar::keyCallback(int key, int action, int mods)
 {
   if (key == GLFW_KEY_W  && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -0.2f});
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -0.25f});
     uploadView();
   }
   if (key == GLFW_KEY_A  && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{-0.2f, 0.0f, 0.0f});
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{-0.25f, 0.0f, 0.0f});
     uploadView();
   }
   if (key == GLFW_KEY_S  && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 0.2f});
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 0.25f});
     uploadView();
   }
   if (key == GLFW_KEY_D  && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.2f, 0.0f, 0.0f});
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.25f, 0.0f, 0.0f});
     uploadView();
   }
   if (key == GLFW_KEY_Q  && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, -0.2f, 0.0f});
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, -0.25f, 0.0f});
     uploadView();
   }
   if (key == GLFW_KEY_E  && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.2f, 0.0f});
+    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.25f, 0.0f});
     uploadView();
   }
 }
@@ -252,6 +252,8 @@ void ApplicationSolar::resizeCallback(unsigned width, unsigned height) {
 // .exe entry point
 int main(int argc, char* argv[])
 {
+  std::cout << "Use WASD to move around. Use QE to go up and down. Use the mouse to move the camera.\n";
+
   // Start the render applicaton
   Application::run<ApplicationSolar>(argc, argv, 3, 2);
 }
