@@ -115,3 +115,16 @@ Node* Node::remove_children(std::string const& child_name)
   }
   return nullptr;
 }
+
+
+// Methods
+void Node::render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform) const
+{
+  // Method called to traverse tree and render all nodes
+
+  // Propagate rendering down to children if Node has children
+  for (Node* children : children_)
+  {
+    children->render(shaders, view_transform);
+  }
+}

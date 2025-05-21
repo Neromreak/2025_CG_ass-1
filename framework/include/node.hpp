@@ -2,9 +2,19 @@
 #define NODE
 
 #include <list>
+#include <map>
 #include <string>
+#include <iostream>
+// Dont load gl bindings from glfw
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include "structs.hpp"
+#include "model.hpp"
 
 
 class Node
@@ -34,6 +44,9 @@ public:
   void set_world_transform(glm::fmat4 const&);
   void add_children(Node*);
   Node* remove_children(std::string const&);
+
+  // Methods
+  virtual void render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform) const;
 
 private:
   std::string name_{"Default Node"};

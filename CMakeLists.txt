@@ -62,9 +62,13 @@ add_executable(solar_system application/source/application_solar.cpp
                             framework/include/node.hpp
                             framework/source/node.cpp
                             framework/include/camera_node.hpp
+                            framework/source/camera_node.cpp
                             framework/include/geometry_node.hpp
+                            framework/source/geometry_node.cpp
                             framework/include/point_light_node.hpp
-                            framework/include/scene_graph.hpp)
+                            framework/source/point_light_node.cpp
+                            framework/include/scene_graph.hpp
+                            framework/source/scene_graph.cpp)
 target_link_libraries(solar_system  framework)
 
 # MacOS doesnt support simple compat mode required for examples

@@ -9,33 +9,13 @@ class SceneGraph
 {
 public:
   // Make singleton by having one instance
-  static SceneGraph& get_instance()
-  {
-    if (!instance_)
-    {
-      instance_ = new SceneGraph();
-    }
-    return *instance_;
-  }
+  static SceneGraph* get_instance();
 
   // Getter Setter
-  std::string const& get_name() const
-  {
-    return name_;
-  }
-  void set_name(std::string const& name_in )
-  {
-    name_ = name_in;
-  }
-
-  Node& get_root() const
-  {
-    return *root_;
-  }
-  void set_root(Node* root_in)
-  {
-    root_ = root_in;
-  }
+  std::string const& get_name() const;
+  void set_name(std::string const& name_in);
+  Node* get_root() const;
+  void set_root(Node* root_in);
 
 private:
   static SceneGraph* instance_;
@@ -48,9 +28,7 @@ private:
   SceneGraph(SceneGraph const&) = delete;
   SceneGraph& operator=(SceneGraph const&) = delete;
 
-  ~SceneGraph() = default;
+  ~SceneGraph() = delete;
 };
-
-SceneGraph* SceneGraph::instance_ = nullptr;
 
 #endif

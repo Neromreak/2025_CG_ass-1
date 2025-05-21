@@ -32,6 +32,7 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path)
 {
   initializeGeometry();
   initializeShaderPrograms();
+  initializeScene();
 }
 
 ApplicationSolar::~ApplicationSolar() {
@@ -41,7 +42,12 @@ ApplicationSolar::~ApplicationSolar() {
 }
 
 void ApplicationSolar::render() const {
-  for (int i = 0; i < 8; ++i)
+  // Traverse the scene graph tree
+  scene->get_root()->render(&m_shaders, &m_view_transform);
+
+
+  return;
+  for (int i = 0; i < 0; ++i)
   {
     // Bind shader to upload uniforms
     glUseProgram(m_shaders.at("planet").handle);
@@ -141,6 +147,68 @@ void ApplicationSolar::initializeGeometry()
   planet_object.num_elements = GLsizei(planet_model.indices.size());
 }
 
+// Create and fill scene with nodes (camera, objects, lights)
+void ApplicationSolar::initializeScene()
+{
+  // Create scene graph and root
+  scene = SceneGraph::get_instance();
+  Node* root = new Node{ "root", nullptr, glm::fmat4{}, glm::fmat4{} };
+  scene->set_root(root);
+  
+  // Add planet holders to scene root
+  Node* holder_mer = new Node{ "Mercury Holder", root, glm::fmat4{}, glm::fmat4{} };
+  
+  Node* holder_ven = new Node{ "Venus Holder", root, glm::fmat4{}, glm::fmat4{} };
+
+  Node* holder_ear = new Node{ "Earth Holder", root, glm::fmat4{}, glm::fmat4{} };
+  Node* holder_moo = new Node{ "Moon Holder", holder_ear, glm::fmat4{}, glm::fmat4{} };
+
+  Node* holder_mar = new Node{ "Mars Holder", root, glm::fmat4{}, glm::fmat4{} };
+
+  Node* holder_jup = new Node{ "Jupiter Holder", root, glm::fmat4{}, glm::fmat4{} };
+
+  Node* holder_sat = new Node{ "Saturn Holder", root, glm::fmat4{}, glm::fmat4{} };
+
+  Node* holder_ura = new Node{ "Uranus Holder", root, glm::fmat4{}, glm::fmat4{} };
+
+  Node* holder_nep = new Node{ "Neptune Holder", root, glm::fmat4{}, glm::fmat4{} };
+  
+  // Add planets to planet holders
+  glm::fmat4 local_transform = glm::translate(glm::fmat4{}, glm::vec3{0.0f, 0.0f, 1.0f});
+  GeometryNode* mer = new GeometryNode{ "Mercury", holder_mer, local_transform, glm::fmat4{}, &planet_object};
+
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 2.0f });
+  GeometryNode* ven = new GeometryNode{ "Venus", holder_ven, local_transform, glm::fmat4{},&planet_object };
+
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 3.0f });
+  GeometryNode* ear = new GeometryNode{ "Earth", holder_ear, local_transform, glm::fmat4{},&planet_object };
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 4.0f });
+  GeometryNode* moo = new GeometryNode{ "Moon", holder_moo, local_transform, glm::fmat4{},&planet_object };
+
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 5.0f });
+  GeometryNode* mar = new GeometryNode{ "Mars", holder_mar, local_transform, glm::fmat4{},&planet_object };
+
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 6.0f });
+  GeometryNode* jup = new GeometryNode{ "Jupiter", holder_jup, local_transform, glm::fmat4{},&planet_object };
+
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 7.0f });
+  GeometryNode* sat = new GeometryNode{ "Saturn", holder_sat, local_transform, glm::fmat4{},&planet_object };
+
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 8.0f });
+  GeometryNode* ura = new GeometryNode{ "Uranus", holder_ura, local_transform, glm::fmat4{},&planet_object };
+
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 9.0f });
+  GeometryNode* nep = new GeometryNode{ "Neptune", holder_nep, local_transform, glm::fmat4{},&planet_object };
+
+  // Add lighting and sun
+  PointLightNode* light_sun = new PointLightNode{ "Sun light", root };
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 0.0f });
+  GeometryNode* sun = new GeometryNode{ "Sun", light_sun, local_transform, glm::fmat4{}, &planet_object};
+
+  // Add camera
+  CameraNode* cam_main = new CameraNode{ "Main Camera", root };
+}
+
 ///////////////////////////// Callback Functions for Window Events ////////////
 // Handle key input
 void ApplicationSolar::keyCallback(int key, int action, int mods) {
@@ -171,63 +239,6 @@ void ApplicationSolar::resizeCallback(unsigned width, unsigned height) {
 // .exe entry point
 int main(int argc, char* argv[])
 {
-  /////////////////////////// Scene Creation //////////////////////////////////
-  // Create scene graph and root
-  SceneGraph* scene = &SceneGraph::get_instance();
-  Node root{ "root", nullptr, glm::fmat4{}, glm::fmat4{} };
-  scene->set_root(&root);
-
-  // Add planet holders to scene root
-  Node holder_mer{ "Mercury Holder", &root, glm::fmat4{}, glm::fmat4{} };
-
-  Node holder_ven{ "Venus Holder", &root, glm::fmat4{}, glm::fmat4{} };
-
-  Node holder_ear{ "Earth Holder", &root, glm::fmat4{}, glm::fmat4{} };
-  Node holder_moo{ "Moon Holder", &holder_ear, glm::fmat4{}, glm::fmat4{} };
-
-  Node holder_mar{ "Mars Holder", &root, glm::fmat4{}, glm::fmat4{} };
-
-  Node holder_jup{ "Jupiter Holder", &root, glm::fmat4{}, glm::fmat4{} };
-
-  Node holder_sat{ "Saturn Holder", &root, glm::fmat4{}, glm::fmat4{} };
-
-  Node holder_ura{ "Uranus Holder", &root, glm::fmat4{}, glm::fmat4{} };
-
-  Node holder_nep{ "Neptune Holder", &root, glm::fmat4{}, glm::fmat4{} };
-
-  // Add planets to planet holders
-  GeometryNode mer{ "Mercury", &holder_mer };
-
-  GeometryNode ven{ "Venus", &holder_ven };
-
-  GeometryNode ear{ "Earth", &holder_ear };
-  GeometryNode moo{ "Moon", &holder_moo };
-
-  GeometryNode mar{ "Mars", &holder_mar };
-
-  GeometryNode jup{ "Jupiter", &holder_jup };
-
-  GeometryNode sat{ "Saturn", &holder_sat };
-
-  GeometryNode ura{ "Uranus", &holder_ura };
-
-  GeometryNode nep{ "Neptune", &holder_nep };
-
-  // Add lighting and sun
-  PointLightNode light_sun{ "Sun light", &root };
-  GeometryNode sun{ "Sun", &light_sun };
-
-  // Add camera
-  CameraNode cam_main{ "Main Camera", &root };
-  
-
-  // Testing
-  const std::list<Node*>& temp = root.get_children();
-  for (Node* node : temp)
-  {
-    std::cout << node->get_name() << "\n";
-  }
-
   // Start the render applicaton
   Application::run<ApplicationSolar>(argc, argv, 3, 2);
 }
