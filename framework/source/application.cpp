@@ -52,7 +52,7 @@ void Application::updateUniformLocations() {
 // handle key input
 void Application::key_callback(GLFWwindow* m_window, int key, int action, int mods) {
   // handle special keys
-  if ((key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q) && action == GLFW_PRESS) {
+  if ((key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(m_window, 1);
   }
   else if (key == GLFW_KEY_R && action == GLFW_PRESS) {

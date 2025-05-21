@@ -23,9 +23,9 @@ public:
   // Constructors
   Node() = default;
   Node(std::string const& name, Node* parent);
-  Node(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform);
+  Node(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation);
   Node(std::string const& name, std::string const& path, Node* parent, std::list<Node*> const& children,
-    int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform);
+    int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation);
   
   ~Node();
   
@@ -46,7 +46,7 @@ public:
   Node* remove_children(std::string const&);
 
   // Methods
-  virtual void render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform) const;
+  virtual void render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform, glm::fmat4 transform) const;
 
 private:
   std::string name_{"Default Node"};
@@ -56,6 +56,7 @@ private:
   int depth_;
   glm::fmat4 local_transform_;
   glm::fmat4 world_transform_;
+  float animation_;
 };
 
 #endif

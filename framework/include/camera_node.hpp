@@ -15,7 +15,7 @@ public:
   CameraNode(std::string const& name, Node* parent, glm::fmat4 const& projection_matrix);
   CameraNode(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, glm::fmat4 const& projection_matrix);
   CameraNode(std::string const& name, std::string const& path, Node* parent, std::list<Node*> const& children,
-    int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, glm::fmat4 const& projection_matrix);
+    int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, glm::fmat4 const& projection_matrix);
 
   // Getter Setter
   bool is_perspective() const;
@@ -25,7 +25,7 @@ public:
   void set_projection_matrix(glm::fmat4 projection_matrix_in);
 
   // Methods
-  void render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform) const override;
+  void render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform, glm::fmat4 transform) const override;
 
 
 private:

@@ -2,14 +2,15 @@
 
 // Constructors
 Node::Node(std::string const& name, std::string const& path, Node* parent, std::list<Node*> const& children,
-  int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform) :
+  int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation):
   name_{ name },
   path_{ path },
   parent_{ parent },
   children_{ children },
   depth_{ depth },
   local_transform_{ local_transform },
-  world_transform_{ world_transform }
+  world_transform_{ world_transform },
+  animation_{animation}
 {
   if (parent != nullptr)
   {
@@ -20,13 +21,12 @@ Node::Node(std::string const& name, std::string const& path, Node* parent, std::
     add_children(new_node);
   }
 }
-Node::Node(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform):
-  Node::Node(name, "no_path", parent, {}, -1, local_transform, world_transform)
+Node::Node(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation):
+  Node::Node(name, "no_path", parent, {}, -1, local_transform, world_transform, animation)
 { }
 Node::Node(std::string const& name, Node* parent) :
-  Node::Node(name, "no_path", parent, {}, -1, glm::fmat4{}, glm::fmat4{})
-{
-}
+  Node::Node(name, "no_path", parent, {}, -1, glm::fmat4{}, glm::fmat4{}, 0.0f)
+{ }
 
 Node::~Node()
 {
@@ -118,13 +118,22 @@ Node* Node::remove_children(std::string const& child_name)
 
 
 // Methods
-void Node::render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform) const
+void Node::render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform, glm::fmat4 transform) const
 {
   // Method called to traverse tree and render all nodes
 
+
+  // Transformations:
+  // Create translation matrix with rotation
+  glm::fmat4 rotation_matrix = glm::rotate(glm::fmat4{}, float(glfwGetTime() * animation_), glm::fvec3{ 0.0f, 1.0f, 0.0f });
+  // Add local transform
+  glm::fmat4 new_local_transform = rotation_matrix * get_local_transform();
+  // Inherit local transform of parent and add own local transform to it
+  glm::fmat4 new_transform = transform * new_local_transform;
+  
   // Propagate rendering down to children if Node has children
   for (Node* children : children_)
   {
-    children->render(shaders, view_transform);
+    children->render(shaders, view_transform, new_transform);
   }
 }

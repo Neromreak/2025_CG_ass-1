@@ -13,14 +13,14 @@ public:
   GeometryNode(std::string const& name, Node* parent, model_object const* geometry);
   GeometryNode(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, model_object const* geometry);
   GeometryNode(std::string const& name, std::string const& path, Node* parent, std::list<Node*> const& children,
-    int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, model_object const* geometry);
+    int depth, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, model_object const* geometry);
 
   // Getter Setter
   model_object const* get_model() const;
   void set_model(model_object const* geometry_in);
 
   // Methods
-  void render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform) const override;
+  void render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform, glm::fmat4 tranform) const override;
 
 
 private:
