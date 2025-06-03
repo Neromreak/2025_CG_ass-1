@@ -14,7 +14,7 @@ using namespace gl;
 
 static void update_shader_programs(std::map<std::string, shader_program>& shaders, bool throwing);
 
-const glm::uvec2 Application::initial_resolution = {640u, 480u};
+const glm::uvec2 Application::initial_resolution = { 1920u, 1080u }; //{640u, 480u};
 const float Application::initial_aspect_ratio = float(initial_resolution.x) / float(initial_resolution.y);
 
 Application::Application(std::string const& resource_path)

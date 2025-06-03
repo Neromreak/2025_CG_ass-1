@@ -20,7 +20,7 @@ public:
   void set_model(model_object const* geometry_in);
 
   // Methods
-  void render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform, glm::fmat4 tranform) const override;
+  void render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform, glm::fmat4 transform) const override;
 
 
 private:

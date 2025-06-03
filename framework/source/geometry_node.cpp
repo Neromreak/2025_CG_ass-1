@@ -53,7 +53,7 @@ void GeometryNode::render(std::map<std::string, shader_program> const* shaders, 
 
   glm::vec4 frag_pos_v4 = new_transform * glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
   glm::vec3 frag_pos{ frag_pos_v4[0] / frag_pos_v4[3], frag_pos_v4[1] / frag_pos_v4[3], frag_pos_v4[2] / frag_pos_v4[3] };
-  // shader_program shader_p = shaders->at("planet");
+
   glUniform3f(glGetUniformLocation(geometry_->vertex_AO, "frag_pos"), frag_pos[0], frag_pos[1], frag_pos[2]);
   if (get_name() == "Sun")
   {
