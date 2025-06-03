@@ -195,6 +195,59 @@ void ApplicationSolar::initializeScene()
 
   // Add camera
   CameraNode* cam_main = new CameraNode{ "Main Camera", root };
+
+
+  // Add stars (Ass2)
+  std::srand(std::time(nullptr));
+
+  std::vector<float> star_data{};
+
+  // Create data for the stars
+  int star_count = 10;
+  float distance = 50;
+  for (int i = 0; i < star_count; ++i)
+  {
+    // Position:
+    // Create random 3D vector
+    float x = (((float)std::rand() / RAND_MAX) * 2) - 1;
+    float y = (((float)std::rand() / RAND_MAX) * 2) - 1;
+    float z = (((float)std::rand() / RAND_MAX) * 2) - 1;
+
+    // Normalize vector
+    float length = sqrt(powf(x, 2) + powf(y, 2) + powf(z, 2));
+
+    x = x / length;
+    y = y / length;
+    z = z / length;
+
+    // Extend vectors
+    x *= distance;
+    y *= distance;
+    z *= distance;
+
+    // Color:
+    float r = (float)std::rand() / RAND_MAX;
+    float g = (float)std::rand() / RAND_MAX;
+    float b = (float)std::rand() / RAND_MAX;
+
+    // Add Pos and Color to container
+    star_data.push_back(x);
+    star_data.push_back(y);
+    star_data.push_back(z);
+    star_data.push_back(r);
+    star_data.push_back(g);
+    star_data.push_back(b);
+  }
+
+  // DEBUG
+  for (int i = 0; i < star_data.size(); ++i)
+  {
+    if (i % 6 == 0)
+    {
+      std::cout << "\n";
+    }
+    std::cout << star_data[i] << " ";
+  }
 }
 
 ///////////////////////////// Callback Functions for Window Events ////////////
