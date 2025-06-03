@@ -1,13 +1,15 @@
 #include "node.hpp"
 
 // Constructors
-Node::Node(std::string const& name, Node* parent, std::list<Node*> const& children, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation):
+Node::Node(std::string const& name, Node* parent, std::list<Node*> const& children, glm::fmat4 const& local_transform,
+  glm::fmat4 const& world_transform, float animation, model_object const* geometry_orbit) :
   name_{ name },
   parent_{ parent },
   children_{ children },
   local_transform_{ local_transform },
   world_transform_{ world_transform },
-  animation_{animation}
+  animation_{ animation },
+  geometry_orbit_{ geometry_orbit }
 {
   if (parent != nullptr)
   {
@@ -27,11 +29,12 @@ Node::Node(std::string const& name, Node* parent, std::list<Node*> const& childr
     depth_++;
   }
 }
-Node::Node(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation):
-  Node::Node(name, parent, {}, local_transform, world_transform, animation)
+Node::Node(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform,
+  float animation, model_object const* geometry_orbit):
+  Node::Node(name, parent, {}, local_transform, world_transform, animation, geometry_orbit)
 { }
 Node::Node(std::string const& name, Node* parent) :
-  Node::Node(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f)
+  Node::Node(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f, nullptr)
 { }
 
 Node::~Node()
@@ -137,6 +140,33 @@ void Node::render(std::map<std::string, shader_program> const* shaders, glm::fma
   // Inherit local transform of parent and add own local transform to it
   glm::fmat4 new_transform = transform * new_local_transform;
   
+
+  // Render the orbit (Ass2):
+  if (geometry_orbit_ != nullptr)
+  {
+    // Calculate size of orbit
+    glm::fmat4 temp = get_local_transform();
+    float orbit_radius = sqrt(pow(temp[3][0] / temp[3][3], 2) + pow(temp[3][1] / temp[3][3], 2) + pow(temp[3][2] / temp[3][3], 2));
+
+    // Scale orbit accordingly
+    glm::fmat4 orbit_transform = glm::scale(transform, orbit_radius * glm::vec3{1.0f, 1.0f, 1.0f});
+
+    // Bind shader
+    glUseProgram(shaders->at("vao").handle);
+
+    // Bind the VAO to draw
+    glBindVertexArray(geometry_orbit_->vertex_AO);
+
+    // Upload transformation to ModelMatrix uniform of the shader
+    glUniformMatrix4fv(shaders->at("vao").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(orbit_transform));
+
+    // Draw bound vertex array using bound shader
+    glDrawArrays(geometry_orbit_->draw_mode, 0, geometry_orbit_->num_elements);
+
+    glBindVertexArray(0);
+  }
+
+
   // Propagate rendering down to children if Node has children
   for (Node* children : children_)
   {

@@ -8,12 +8,13 @@ GeometryNode::GeometryNode(std::string const& name, Node* parent):
 GeometryNode::GeometryNode(std::string const& name, Node* parent, model_object const* geometry):
   GeometryNode::GeometryNode(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f, geometry)
 { }
-GeometryNode::GeometryNode(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, model_object const* geometry) :
+GeometryNode::GeometryNode(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform,
+  model_object const* geometry) :
   GeometryNode::GeometryNode(name, parent, {}, local_transform, world_transform, 0.0f, geometry)
 { }
 GeometryNode::GeometryNode(std::string const& name, Node* parent, std::list<Node*> const& children,
-  glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, model_object const* geometry) :
-  Node::Node(name, parent, children, local_transform, world_transform, animation),
+  glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, model_object const* geometry):
+  Node::Node(name, parent, children, local_transform, world_transform, animation, nullptr),
   geometry_{ geometry }
 { }
 
@@ -68,7 +69,11 @@ void GeometryNode::render(std::map<std::string, shader_program> const* shaders, 
   glBindVertexArray(geometry_->vertex_AO);
   // Draw bound vertex array using bound shader
   glDrawElements(geometry_->draw_mode, geometry_->num_elements, model::INDEX.type, NULL);
-  
+
+  // Unbind VA
+  glBindVertexArray(0);
+
+
   // Render children
   Node::render(shaders, view_transform, transform);
 }

@@ -25,12 +25,13 @@ using namespace gl;
 #include <iostream>
 #include <numbers>
 
-ApplicationSolar::ApplicationSolar(std::string const& resource_path)
- :Application{resource_path}
- ,planet_object{}
- ,stars_object{}
- ,m_view_transform{glm::translate(glm::fmat4{}, glm::fvec3{0.0f, 0.0f, 30.0f})}
- ,m_view_projection{utils::calculate_projection_matrix(initial_aspect_ratio)}
+ApplicationSolar::ApplicationSolar(std::string const& resource_path):
+  Application{resource_path},
+  planet_object{},
+  stars_object{},
+  circle_object{},
+  m_view_transform{glm::translate(glm::fmat4{}, glm::fvec3{0.0f, 0.0f, 30.0f})},
+  m_view_projection{utils::calculate_projection_matrix(initial_aspect_ratio)}
 {
   initializeGeometry();
   initializeShaderPrograms();
@@ -52,6 +53,10 @@ void ApplicationSolar::render() const {
   // Bind shader
   glUseProgram(m_shaders.at("vao").handle);
   
+  // Upload Identity matrix as ModelMatrix for stars (no transformation as all stars are on object)
+  glUniformMatrix4fv(m_shaders.at("vao").u_locs.at("ModelMatrix"),
+                      1, GL_FALSE, glm::value_ptr(glm::fmat4{}));
+
   // Bind the VAO to draw
   glBindVertexArray(stars_object.vertex_AO);
 
@@ -70,7 +75,7 @@ void ApplicationSolar::uploadView() {
 
   // Bind and upload vao shader
   glUseProgram(m_shaders.at("vao").handle);
-  glUniformMatrix4fv(m_shaders.at("vao").u_locs.at("ModelViewMatrix"),
+  glUniformMatrix4fv(m_shaders.at("vao").u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(view_matrix));
 }
 
@@ -114,7 +119,8 @@ void ApplicationSolar::initializeShaderPrograms()
   m_shaders.emplace("vao", shader_program{ {{GL_VERTEX_SHADER, m_resource_path + "shaders/vao.vert"},
                                           {GL_FRAGMENT_SHADER, m_resource_path + "shaders/vao.frag"}} });
   // Request uniform locations for shader program
-  m_shaders.at("vao").u_locs["ModelViewMatrix"] = -1;
+  m_shaders.at("vao").u_locs["ModelMatrix"] = -1;
+  m_shaders.at("vao").u_locs["ViewMatrix"] = -1;
   m_shaders.at("vao").u_locs["ProjectionMatrix"] = -1;
 }
 
@@ -182,20 +188,45 @@ void ApplicationSolar::initializeGeometry()
   // Second attribute are the colors (3 floats for each vertex attribute with 6 floats offset (stride) between the vertex attributes and 3 floats initial offset)
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));  
 
-  /*
   // Element Buffer (for draw order of vertecies) not needed as the stars_model are drawn as single points (point cloud)
-  // Generate generic buffer
-  glGenBuffers(1, &stars_object.element_BO);
-  // Bind this as an vertex array buffer containing all attributes
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, stars_object.element_BO);
-  // Configure currently bound array buffer
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size * stars_model.indices.size(), stars_model.indices.data(), GL_STATIC_DRAW);
-  */
 
   // Store type of primitive to draw (single points without edges or faces inbetween)
   stars_object.draw_mode = GL_POINTS;
   // Transfer number of indices to model object 
   stars_object.num_elements = GLsizei(stars_model.size() / 6);
+
+
+  // Circle:
+  std::vector<float> circle_model = generateGeometryCircle();
+
+  // Generate vertex array object
+  glGenVertexArrays(1, &circle_object.vertex_AO);
+  // Bind the array for attaching buffers
+  glBindVertexArray(circle_object.vertex_AO);
+
+  // Generate generic buffer
+  glGenBuffers(1, &circle_object.vertex_BO);
+  // Bind this as an vertex array buffer containing all attributes
+  glBindBuffer(GL_ARRAY_BUFFER, circle_object.vertex_BO);
+  // Configure currently bound array buffer
+  glBufferData(GL_ARRAY_BUFFER, circle_model.size() * sizeof(float), circle_model.data(), GL_STATIC_DRAW);
+
+  // Activate first attribute on GPU (in_Position)
+  glEnableVertexAttribArray(0);
+  // First attribute are the positions (3 floats for each vertex attribute with 6 floats offset (stride) between the vertex attributes and no initial offset)
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(0));
+  // Activate second attribute on GPU (in_Color)
+  glEnableVertexAttribArray(1);
+  // Second attribute are the colors (3 floats for each vertex attribute with 6 floats offset (stride) between the vertex attributes and 3 floats initial offset)
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+
+  // Element Buffer
+
+  // Store type of primitive to draw
+  circle_object.draw_mode = GL_POINTS;
+  // Transfer number of indices to model object 
+  circle_object.num_elements = GLsizei(circle_model.size() / 6);
+
 
   // Unbind VA
   glBindVertexArray(0);
@@ -211,7 +242,7 @@ std::vector<float> ApplicationSolar::generateGeometryStars()
   std::vector<float> star_data{};
 
   // Create data for the stars
-  int star_count = 50'000;
+  int star_count = 00'000;
   float distance = 50.0f;
   float pi = acos(0.0f) * 2.0f;
   for (int i = 0; i < star_count; ++i)
@@ -249,76 +280,96 @@ std::vector<float> ApplicationSolar::generateGeometryStars()
 }
 
 
+// Generate a circle that can be used as an orbit (Ass2)
+std::vector<float> ApplicationSolar::generateGeometryCircle()
+{
+  std::vector<float> vertex_container{};
+
+  // Increment and rotate vertecies to form a circle
+  int vertex_count = 120;
+  float pi = acos(0.0f) * 2.0f;
+  for (int i = 0; i < vertex_count; ++i)
+  {
+    glm::fmat4 rotation_matrix = glm::rotate(glm::fmat4{}, ((2.0f * pi) / vertex_count) * i, glm::fvec3{ 0.0f, 1.0f, 0.0f });
+    glm::vec4 vertex = rotation_matrix * glm::vec4{ 1.0, 0.0, 0.0, 1.0 };
+    vertex_container.push_back(vertex[0] / vertex[3]);
+    vertex_container.push_back(vertex[1] / vertex[3]);
+    vertex_container.push_back(vertex[2] / vertex[3]);
+    vertex_container.push_back(1.0f); //(cos(((2.0f * pi) / vertex_count) * i));
+    vertex_container.push_back(1.0f); //(0.2f);
+    vertex_container.push_back(1.0f); //(1.0f - cos(((2.0f * pi) / vertex_count) * i));
+  }
+  return vertex_container;
+}
+
 // Create and fill scene with nodes (camera, objects, lights)
 void ApplicationSolar::initializeScene()
 {
   // Create scene graph and root
   scene = SceneGraph::get_instance();
-  Node* root = new Node{ "root", nullptr, glm::fmat4{}, glm::fmat4{}, 0.0f };
+  Node* root = new Node{ "root", nullptr, glm::fmat4{}, glm::fmat4{}, 0.0f, nullptr };
   scene->set_root(root);
   
   // Add planet holders to scene root
   glm::fmat4 local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 6.0f });
-  Node* holder_mer = new Node{ "Mercury Holder", root, local_transform, glm::fmat4{}, 1.0f };
+  Node* holder_mer = new Node{ "Mercury Holder", root, local_transform, glm::fmat4{}, 1.0f, &circle_object };
   
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 10.0f });
-  Node* holder_ven = new Node{ "Venus Holder", root, local_transform, glm::fmat4{}, 0.8f };
+  Node* holder_ven = new Node{ "Venus Holder", root, local_transform, glm::fmat4{}, 0.8f, &circle_object };
 
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 14.0f });
-  Node* holder_ear = new Node{ "Earth Holder", root, local_transform, glm::fmat4{}, 0.6f };
+  Node* holder_ear = new Node{ "Earth Holder", root, local_transform, glm::fmat4{}, 0.6f, &circle_object };
   
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{0.0f, 0.0f, 1.5f});
-  Node* holder_moo = new Node{ "Moon Holder", holder_ear, local_transform, glm::fmat4{}, 1.2f };
+  Node* holder_moo = new Node{ "Moon Holder", holder_ear, local_transform, glm::fmat4{}, 1.2f, &circle_object };
 
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 18.0f });
-  Node* holder_mar = new Node{ "Mars Holder", root, local_transform, glm::fmat4{}, 0.4f };
+  Node* holder_mar = new Node{ "Mars Holder", root, local_transform, glm::fmat4{}, 0.4f, &circle_object };
 
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 26.0f });
-  Node* holder_jup = new Node{ "Jupiter Holder", root, local_transform, glm::fmat4{}, 0.2f };
+  Node* holder_jup = new Node{ "Jupiter Holder", root, local_transform, glm::fmat4{}, 0.2f, &circle_object };
 
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 32.0f });
-  Node* holder_sat = new Node{ "Saturn Holder", root, local_transform, glm::fmat4{}, 0.1f };
+  Node* holder_sat = new Node{ "Saturn Holder", root, local_transform, glm::fmat4{}, 0.1f, &circle_object };
 
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 38.0f });
-  Node* holder_ura = new Node{ "Uranus Holder", root, local_transform, glm::fmat4{}, 0.05f };
+  Node* holder_ura = new Node{ "Uranus Holder", root, local_transform, glm::fmat4{}, 0.05f, &circle_object };
 
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 44.0f });
-  Node* holder_nep = new Node{ "Neptune Holder", root, local_transform, glm::fmat4{}, 0.03f };
+  Node* holder_nep = new Node{ "Neptune Holder", root, local_transform, glm::fmat4{}, 0.03f, &circle_object };
   
   // Add planets to planet holders
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.35f });
   GeometryNode* mer = new GeometryNode{ "Mercury", holder_mer, local_transform, glm::fmat4{}, &planet_object};
 
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.8f });
-  GeometryNode* ven = new GeometryNode{ "Venus", holder_ven, local_transform, glm::fmat4{}, &planet_object};
+  GeometryNode* ven = new GeometryNode{ "Venus", holder_ven, local_transform, glm::fmat4{}, &planet_object };
 
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.8f });
-  GeometryNode* ear = new GeometryNode{ "Earth", holder_ear, local_transform, glm::fmat4{}, &planet_object};
+  GeometryNode* ear = new GeometryNode{ "Earth", holder_ear, local_transform, glm::fmat4{}, &planet_object };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.25f });
-  GeometryNode* moo = new GeometryNode{ "Moon", holder_moo, local_transform, glm::fmat4{}, &planet_object};
+  GeometryNode* moo = new GeometryNode{ "Moon", holder_moo, local_transform, glm::fmat4{}, &planet_object };
 
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.45f });
-  GeometryNode* mar = new GeometryNode{ "Mars", holder_mar, local_transform, glm::fmat4{}, &planet_object};
+  GeometryNode* mar = new GeometryNode{ "Mars", holder_mar, local_transform, glm::fmat4{}, &planet_object };
 
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.6f });
-  GeometryNode* jup = new GeometryNode{ "Jupiter", holder_jup, local_transform, glm::fmat4{}, &planet_object};
+  GeometryNode* jup = new GeometryNode{ "Jupiter", holder_jup, local_transform, glm::fmat4{}, &planet_object };
 
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.4f });
-  GeometryNode* sat = new GeometryNode{ "Saturn", holder_sat, local_transform, glm::fmat4{}, &planet_object};
+  GeometryNode* sat = new GeometryNode{ "Saturn", holder_sat, local_transform, glm::fmat4{}, &planet_object };
 
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.2f });
-  GeometryNode* ura = new GeometryNode{ "Uranus", holder_ura, local_transform, glm::fmat4{}, &planet_object};
+  GeometryNode* ura = new GeometryNode{ "Uranus", holder_ura, local_transform, glm::fmat4{}, &planet_object, };
 
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.1f });
-  GeometryNode* nep = new GeometryNode{ "Neptune", holder_nep, local_transform, glm::fmat4{}, &planet_object};
+  GeometryNode* nep = new GeometryNode{ "Neptune", holder_nep, local_transform, glm::fmat4{}, &planet_object };
 
   // Add lighting and sun
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 0.0f });
   PointLightNode* light_sun = new PointLightNode{ "Sun light", root, local_transform, glm::fmat4{}, 0.0f, glm::vec3{}, 1.0f };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{3.0f});
   GeometryNode* sun = new GeometryNode{ "Sun", light_sun, local_transform, glm::fmat4{}, &planet_object};
-  
-  std::cout << "DEBUG: " << moo->get_path() << "\n" << moo->get_depth();
 
   // Add camera
   CameraNode* cam_main = new CameraNode{ "Main Camera", root };

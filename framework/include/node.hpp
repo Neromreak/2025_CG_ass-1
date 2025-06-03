@@ -23,9 +23,9 @@ public:
   // Constructors
   Node() = default;
   Node(std::string const& name, Node* parent);
-  Node(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation);
+  Node(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, model_object const* geometry_orbit);
   Node(std::string const& name, Node* parent, std::list<Node*> const& children,
-    glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation);
+    glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, model_object const* geometry_orbit);
   
   ~Node();
   
@@ -57,6 +57,8 @@ private:
   glm::fmat4 local_transform_;
   glm::fmat4 world_transform_;
   float animation_;
+
+  model_object const* geometry_orbit_;
 };
 
 #endif

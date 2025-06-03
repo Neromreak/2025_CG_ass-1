@@ -30,6 +30,7 @@ class ApplicationSolar : public Application {
   void initializeShaderPrograms();
   void initializeGeometry();
   std::vector<float> generateGeometryStars();
+  std::vector<float> generateGeometryCircle();
   void initializeScene();
   // Update uniform values
   void uploadUniforms();
@@ -41,6 +42,7 @@ class ApplicationSolar : public Application {
 // CPU representation of model
   model_object planet_object;
   model_object stars_object;
+  model_object circle_object;
   
   // Camera transform matrix
   glm::fmat4 m_view_transform;

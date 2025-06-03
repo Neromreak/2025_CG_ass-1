@@ -14,7 +14,7 @@ PointLightNode::PointLightNode(std::string const& name, Node* parent, glm::fmat4
 { }
 PointLightNode::PointLightNode(std::string const& name, Node* parent, std::list<Node*> const& children,
   glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, glm::vec3 const& color, float intensity):
-  Node::Node(name, parent, children, local_transform, world_transform, animation),
+  Node::Node(name, parent, children, local_transform, world_transform, animation, nullptr),
   color_{ color },
   intensity_{ intensity }
 { }

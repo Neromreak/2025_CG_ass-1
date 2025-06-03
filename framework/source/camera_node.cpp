@@ -16,7 +16,7 @@ CameraNode::CameraNode(std::string const& name, Node* parent, glm::fmat4 const& 
 }
 CameraNode::CameraNode(std::string const& name, Node* parent, std::list<Node*> const& children,
   glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, glm::fmat4 const& projection_matrix) :
-  Node::Node(name, parent, children, local_transform, world_transform, animation),
+  Node::Node(name, parent, children, local_transform, world_transform, animation, nullptr),
   projection_matrix_{ projection_matrix }
 { }
 
