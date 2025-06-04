@@ -51,23 +51,33 @@ ApplicationSolar::~ApplicationSolar() {
 
 void ApplicationSolar::physics()
 {
+  // ROTATION | Apply previously captured rotation onto the camera:
+  // Rotate around vertical axis
+  if (abs(rot_h) > 0.00001f)
+  {
+     glm::fmat4 temp = glm::rotate(glm::fmat4{1.0f}, rot_h * -rotation_speed, glm::fvec3{0.0f, 1.0f, 0.0f});
+     m_view_transform = temp * m_view_transform;
+    // Rotation values have to be set back to zero (the mouse movement method is callback and can't reset them)
+    rot_h = 0.0f;
+  }
+
   // Extract horizontal view direction (movement should be influenced by horizontal rotation but not by vertical rotation
   //                                    ... and vertical rotation needs the view direction)
-  glm::fmat4 view_inv = glm::inverse(glm::inverse(m_view_transform));
+  glm::fmat4 view_inv = m_view_transform;
   glm::vec3 view_dir_h{ view_inv[2][0] / view_inv[3][3], 0, view_inv[2][2] / view_inv[3][3] };
   view_dir_h = glm::normalize(view_dir_h);
-  glm::vec3 left_dir_h{ view_dir_h[2], 0, -view_dir_h[0] };
+  glm::vec3 left_dir_h{ view_inv[0][0] / view_inv[3][3], view_inv[0][1] / view_inv[3][3], view_inv[0][2] / view_inv[3][3]};
 
-  /*
-  // Apply previously captured rotation onto the camera:
-  // Rotate around vertical axis
-  glm::fmat4 rotation_h = glm::rotate(glm::mat4{}, rot_h * rotation_speed, glm::fvec3{ 0.0f, 1.0f, 0.0f });
   // Rotate around local left axis
-  glm::fmat4 rotation_v = glm::rotate(glm::mat4{}, rot_v * rotation_speed, left_dir_h);
-  m_view_transform *= rotation_h * rotation_v;
-  */
+  if (abs(rot_v) > 0.00001f)
+  {
+     glm::fmat4 temp = glm::rotate(glm::fmat4{1.0f}, rot_v * -rotation_speed, left_dir_h);
+     m_view_transform = temp * m_view_transform;
+    // Rotation values have to be set back to zero (the mouse movement method is callback and can't reset them)
+    rot_v = 0.0f;
+  }
 
-  // Apply previously captured movement onto the camera:
+  // MOVEMENT | Apply previously captured movement onto the camera:
   bool has_pos_changed = move_x != 0 || move_y != 0 || move_z != 0;
   glm::fmat4 translation{0.0f};
 
@@ -493,10 +503,6 @@ void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {
   // Read and store mouse movement inputs
   rot_h = float(pos_x);
   rot_v = float(pos_y);
-
-  glm::fmat4 rotation_x = glm::rotate(glm::mat4{}, rot_h * -0.0015f, glm::fvec3{ 0.0f, 1.0f, 0.0f });
-  glm::fmat4 rotation_y = glm::rotate(glm::mat4{}, rot_v * -0.0015f, glm::fvec3{ 1.0f, 0.0f, 0.0f });
-  m_view_transform *= rotation_x * rotation_y;
 }
 
 // Handle resizing

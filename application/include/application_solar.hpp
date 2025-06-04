@@ -17,11 +17,11 @@ class ApplicationSolar : public Application {
   ~ApplicationSolar();
 
   // React to key input
-  void keyCallback(int key, int action, int mods);
+  void keyCallback(int key, int action, int mods) override;
   // Handle delta mouse movement input
-  void mouseCallback(double pos_x, double pos_y);
+  void mouseCallback(double pos_x, double pos_y) override;
   // Handle resizing
-  void resizeCallback(unsigned width, unsigned height);
+  void resizeCallback(unsigned width, unsigned height) override;
 
   // Draw all objects
   void render() const override;
@@ -59,7 +59,7 @@ class ApplicationSolar : public Application {
   int move_x = 0;
   int move_y = 0;
   int move_z = 0;
-  float rotation_speed = 0.0005f;
+  float rotation_speed = 0.001f;
   float rot_h = 0.0f;
   float rot_v= 0.0f;
 };

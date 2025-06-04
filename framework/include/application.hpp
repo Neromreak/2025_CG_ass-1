@@ -96,5 +96,4 @@ void Application::run(int argc, char* argv[], unsigned ver_major, unsigned ver_m
     window_handler::close_and_quit(window, EXIT_SUCCESS);
 }
 
-
 #endif

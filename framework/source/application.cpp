@@ -11,6 +11,7 @@ using namespace gl;
 //dont load gl bindings from glfw
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#include <iostream>
 
 static void update_shader_programs(std::map<std::string, shader_program>& shaders, bool throwing);
 
