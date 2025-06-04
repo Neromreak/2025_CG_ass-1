@@ -33,6 +33,10 @@ ApplicationSolar::ApplicationSolar(std::string const& resource_path):
   m_view_transform{glm::translate(glm::fmat4{}, glm::fvec3{0.0f, 0.0f, 30.0f})},
   m_view_projection{utils::calculate_projection_matrix(initial_aspect_ratio)}
 {
+  // Modify far and near clipping planes of the projection matrix to extend render distance (https://www.terathon.com/gdc07_lengyel.pdf)
+  m_view_projection[2][2] = -0.9999f;
+  m_view_projection[3][2] = -0.1999f;
+
   initializeGeometry();
   initializeShaderPrograms();
   initializeScene();
@@ -43,6 +47,55 @@ ApplicationSolar::~ApplicationSolar() {
   glDeleteBuffers(1, &planet_object.vertex_BO);
   glDeleteBuffers(1, &planet_object.element_BO);
   glDeleteVertexArrays(1, &planet_object.vertex_AO);
+}
+
+void ApplicationSolar::physics()
+{
+  // Extract horizontal view direction (movement should be influenced by horizontal rotation but not by vertical rotation
+  //                                    ... and vertical rotation needs the view direction)
+  glm::fmat4 view_inv = glm::inverse(glm::inverse(m_view_transform));
+  glm::vec3 view_dir_h{ view_inv[2][0] / view_inv[3][3], 0, view_inv[2][2] / view_inv[3][3] };
+  view_dir_h = glm::normalize(view_dir_h);
+  glm::vec3 left_dir_h{ view_dir_h[2], 0, -view_dir_h[0] };
+
+  /*
+  // Apply previously captured rotation onto the camera:
+  // Rotate around vertical axis
+  glm::fmat4 rotation_h = glm::rotate(glm::mat4{}, rot_h * rotation_speed, glm::fvec3{ 0.0f, 1.0f, 0.0f });
+  // Rotate around local left axis
+  glm::fmat4 rotation_v = glm::rotate(glm::mat4{}, rot_v * rotation_speed, left_dir_h);
+  m_view_transform *= rotation_h * rotation_v;
+  */
+
+  // Apply previously captured movement onto the camera:
+  bool has_pos_changed = move_x != 0 || move_y != 0 || move_z != 0;
+  glm::fmat4 translation{0.0f};
+
+  // Update view only if camera moved
+  if(has_pos_changed)
+  {
+    // Calculate movement
+    if (move_x != 0)
+    {
+      translation[3][0] += left_dir_h[0] * movement_speed * move_x;
+      translation[3][2] += left_dir_h[2] * movement_speed * move_x;
+    }
+    if (move_y != 0)
+    {
+      translation[3][1] += movement_speed * move_y;
+    }
+    if (move_z != 0)
+    {
+      translation[3][0] += view_dir_h[0] * movement_speed * move_z;
+      translation[3][2] += view_dir_h[2] * movement_speed * move_z;
+    }
+
+    // Apply transformation in world space (no local oriented movement)
+    m_view_transform += translation;
+  }
+
+  // Update the shaders
+  uploadView();
 }
 
 void ApplicationSolar::render() const {
@@ -243,12 +296,12 @@ std::vector<float> ApplicationSolar::generateGeometryStars()
 
   // Create data for the stars
   int star_count = 50'000;
-  float distance = 50.0f;
+  float distance = 1500.0f;
   float pi = acos(0.0f) * 2.0f;
   for (int i = 0; i < star_count; ++i)
   {
     // Position:
-    // Create random 3D vector
+    // Create random 3D vector on a sphere (evenly distributed)
     float alpha = ((float)std::rand() / RAND_MAX) * 2.0f * pi;
     float beta = acos((((float)std::rand() / RAND_MAX) * 2.0f ) - 1.0f);
 
@@ -257,7 +310,7 @@ std::vector<float> ApplicationSolar::generateGeometryStars()
     float z = sin(beta) * sin(alpha);
 
     // Extend vectors
-    float deviation = 1 + (((float)std::rand() / RAND_MAX) * 0.2);
+    float deviation = 1 + (((float)std::rand() / RAND_MAX) * 0.3);
     x *= distance * deviation;
     y *= distance * deviation;
     z *= distance * deviation;
@@ -391,45 +444,59 @@ void ApplicationSolar::initializeScene()
 // Handle key input
 void ApplicationSolar::keyCallback(int key, int action, int mods)
 {
+  // Read keys and store user controls
+  move_x = 0;
+  move_y = 0;
+  move_z = 0;
+
   if (key == GLFW_KEY_W  && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, -0.25f});
-    uploadView();
+    move_z = -1;
   }
   if (key == GLFW_KEY_A  && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{-0.25f, 0.0f, 0.0f});
-    uploadView();
+    move_x = -1;
   }
   if (key == GLFW_KEY_S  && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.0f, 0.25f});
-    uploadView();
+    move_z = 1;
   }
   if (key == GLFW_KEY_D  && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.25f, 0.0f, 0.0f});
-    uploadView();
+    move_x = 1;
   }
   if (key == GLFW_KEY_Q  && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, -0.25f, 0.0f});
-    uploadView();
+    move_y = -1;
   }
   if (key == GLFW_KEY_E  && (action == GLFW_PRESS || action == GLFW_REPEAT))
   {
-    m_view_transform = glm::translate(m_view_transform, glm::fvec3{0.0f, 0.25f, 0.0f});
-    uploadView();
+    move_y = 1;
+  }
+
+  // Log for debugging on key H
+  if (key == GLFW_KEY_H && (action == GLFW_PRESS))
+  {
+    // DEBUG
+    std::cout << "DEBUG INFO:\n";
+    std::cout << "m_view_transform: ---------------------\n";
+    std::cout << m_view_transform[0][0] << " " << m_view_transform[1][0] << " " << m_view_transform[2][0] << " " << m_view_transform[3][0] << "\n";
+    std::cout << m_view_transform[0][1] << " " << m_view_transform[1][1] << " " << m_view_transform[2][1] << " " << m_view_transform[3][1] << "\n";
+    std::cout << m_view_transform[0][2] << " " << m_view_transform[1][2] << " " << m_view_transform[2][2] << " " << m_view_transform[3][2] << "\n";
+    std::cout << m_view_transform[0][3] << " " << m_view_transform[1][3] << " " << m_view_transform[2][3] << " " << m_view_transform[3][3] << "\n";
+    std::cout << "\n";
   }
 }
 
 // Handle delta mouse movement input
 void ApplicationSolar::mouseCallback(double pos_x, double pos_y) {
-  // Mouse handling
-  glm::fmat4 rotation_x = glm::rotate(glm::mat4{}, float(pos_x) * -0.0015f, glm::fvec3{ 0.0f, 1.0f, 0.0f });
-  glm::fmat4 rotation_y = glm::rotate(glm::mat4{}, float(pos_y) * -0.0015f, glm::fvec3{ 1.0f, 0.0f, 0.0f });
+  // Read and store mouse movement inputs
+  rot_h = float(pos_x);
+  rot_v = float(pos_y);
+
+  glm::fmat4 rotation_x = glm::rotate(glm::mat4{}, rot_h * -0.0015f, glm::fvec3{ 0.0f, 1.0f, 0.0f });
+  glm::fmat4 rotation_y = glm::rotate(glm::mat4{}, rot_v * -0.0015f, glm::fvec3{ 1.0f, 0.0f, 0.0f });
   m_view_transform *= rotation_x * rotation_y;
-  uploadView();
 }
 
 // Handle resizing

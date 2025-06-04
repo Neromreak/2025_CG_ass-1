@@ -39,6 +39,8 @@ class Application {
   inline virtual void resizeCallback(unsigned width, unsigned height) {};
   // Draw all objects
   virtual void render() const = 0;
+  // Logic / Physics
+  virtual void physics() = 0;
 
  protected:
   void updateUniformLocations();
@@ -80,6 +82,8 @@ void Application::run(int argc, char* argv[], unsigned ver_major, unsigned ver_m
       glfwPollEvents();
       // Clear buffer
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      // Execute logic and physics
+      application->physics();
       // Draw geometry
       application->render();
       // Swap draw buffer to front

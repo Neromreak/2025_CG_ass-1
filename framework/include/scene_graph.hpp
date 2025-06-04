@@ -3,6 +3,7 @@
 
 #include <string>
 #include "node.hpp"
+#include <GLFW/glfw3.h>
 
 
 class SceneGraph
@@ -30,5 +31,7 @@ private:
 
   ~SceneGraph() = delete;
 };
+
+void print_glm4matf(glm::fmat4 const& matrix);
 
 #endif

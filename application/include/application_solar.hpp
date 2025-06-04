@@ -24,7 +24,10 @@ class ApplicationSolar : public Application {
   void resizeCallback(unsigned width, unsigned height);
 
   // Draw all objects
-  void render() const;
+  void render() const override;
+
+  // Execute logic and physics
+  void physics() override;
 
  protected:
   void initializeShaderPrograms();
@@ -50,6 +53,15 @@ class ApplicationSolar : public Application {
   glm::fmat4 m_view_projection;
 
   SceneGraph* scene;
+
+  // Variables for movement
+  float movement_speed = 0.10f;
+  int move_x = 0;
+  int move_y = 0;
+  int move_z = 0;
+  float rotation_speed = 0.0005f;
+  float rot_h = 0.0f;
+  float rot_v= 0.0f;
 };
 
 #endif
