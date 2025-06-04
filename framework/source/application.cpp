@@ -65,8 +65,15 @@ void Application::key_callback(GLFWwindow* m_window, int key, int action, int mo
   }
 }
 
+bool is_first_call = true;
 //handle mouse movement input
 void Application::mouse_callback(GLFWwindow* window, double pos_x, double pos_y) {
+  if (is_first_call)
+  {
+    glfwSetCursorPos(window, 0.0, 0.0);
+    is_first_call = false;
+    return;
+  }
   // pass input to derived class
   mouseCallback(pos_x, pos_y);
   // reset cursor pos to receive position delta next frame
