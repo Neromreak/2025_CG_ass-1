@@ -188,7 +188,7 @@ void ApplicationSolar::initializeGeometry()
   // Second attribute are the colors (3 floats for each vertex attribute with 6 floats offset (stride) between the vertex attributes and 3 floats initial offset)
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));  
 
-  // Element Buffer (for draw order of vertecies) not needed as the stars_model are drawn as single points (point cloud)
+  // Element Array Buffer (for draw order of vertecies) not needed as the stars_model are drawn as single points (point cloud)
 
   // Store type of primitive to draw (single points without edges or faces inbetween)
   stars_object.draw_mode = GL_POINTS;
@@ -220,10 +220,10 @@ void ApplicationSolar::initializeGeometry()
   // Second attribute are the colors (3 floats for each vertex attribute with 6 floats offset (stride) between the vertex attributes and 3 floats initial offset)
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
-  // Element Buffer
-
+  // Element Array Buffer (for draw order of vertecies) not needed as the a LINE_LOOP just connects the vertecies in order (and last with first)
+  
   // Store type of primitive to draw
-  circle_object.draw_mode = GL_POINTS;
+  circle_object.draw_mode = GL_LINE_LOOP;
   // Transfer number of indices to model object 
   circle_object.num_elements = GLsizei(circle_model.size() / 6);
 
@@ -242,7 +242,7 @@ std::vector<float> ApplicationSolar::generateGeometryStars()
   std::vector<float> star_data{};
 
   // Create data for the stars
-  int star_count = 00'000;
+  int star_count = 50'000;
   float distance = 50.0f;
   float pi = acos(0.0f) * 2.0f;
   for (int i = 0; i < star_count; ++i)
@@ -263,9 +263,12 @@ std::vector<float> ApplicationSolar::generateGeometryStars()
     z *= distance * deviation;
 
     // Color:
-    float r = (float)std::rand() / RAND_MAX;
-    float g = (float)std::rand() / RAND_MAX;
-    float b = (float)std::rand() / RAND_MAX;
+    float f1 = (float)std::rand() / RAND_MAX * 0.7f;
+    float f2 = (float)std::rand() / RAND_MAX * 0.8f;
+
+    float r = 1.0f;
+    float g = 1.0f - f1;
+    float b = std::fmax(1.0f - f1 - f2, 0.0f);
 
     // Add Pos and Color to container
     star_data.push_back(x);
@@ -286,19 +289,28 @@ std::vector<float> ApplicationSolar::generateGeometryCircle()
   std::vector<float> vertex_container{};
 
   // Increment and rotate vertecies to form a circle
-  int vertex_count = 120;
+  int vertex_count = 360;
   float pi = acos(0.0f) * 2.0f;
   for (int i = 0; i < vertex_count; ++i)
   {
+    // Rotation
     glm::fmat4 rotation_matrix = glm::rotate(glm::fmat4{}, ((2.0f * pi) / vertex_count) * i, glm::fvec3{ 0.0f, 1.0f, 0.0f });
     glm::vec4 vertex = rotation_matrix * glm::vec4{ 1.0, 0.0, 0.0, 1.0 };
+
+    // Add geometry
     vertex_container.push_back(vertex[0] / vertex[3]);
     vertex_container.push_back(vertex[1] / vertex[3]);
     vertex_container.push_back(vertex[2] / vertex[3]);
-    vertex_container.push_back(1.0f); //(cos(((2.0f * pi) / vertex_count) * i));
-    vertex_container.push_back(1.0f); //(0.2f);
-    vertex_container.push_back(1.0f); //(1.0f - cos(((2.0f * pi) / vertex_count) * i));
+
+    // Color
+    float r = std::min((cos(((2.0f * pi) / vertex_count) * i) * 0.5f ) + 0.8f, 1.0f);
+    float g = 0.5f;
+    float b = std::min(1.2f - ( cos(((2.0f * pi) / vertex_count) * i) * 0.5f), 1.0f);
+    vertex_container.push_back(r);
+    vertex_container.push_back(g);
+    vertex_container.push_back(b);
   }
+
   return vertex_container;
 }
 
