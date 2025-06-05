@@ -397,57 +397,104 @@ void ApplicationSolar::initializeScene()
   scene->set_root(root);
   
   // Add planet holders to scene root
+  // Mercury holder
   glm::fmat4 local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 6.0f });
   Node* holder_mer = new Node{ "Mercury Holder", root, local_transform, glm::fmat4{}, 1.0f, &circle_object };
   
+  // Venusholder
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 10.0f });
   Node* holder_ven = new Node{ "Venus Holder", root, local_transform, glm::fmat4{}, 0.8f, &circle_object };
 
+  // Earth and moon holders
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 14.0f });
   Node* holder_ear = new Node{ "Earth Holder", root, local_transform, glm::fmat4{}, 0.6f, &circle_object };
-  
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{0.0f, 0.0f, 1.5f});
   Node* holder_moo = new Node{ "Moon Holder", holder_ear, local_transform, glm::fmat4{}, 1.2f, &circle_object };
 
+  // Mars holder
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 18.0f });
   Node* holder_mar = new Node{ "Mars Holder", root, local_transform, glm::fmat4{}, 0.4f, &circle_object };
 
+  // Jupiter and moons holders
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 26.0f });
   Node* holder_jup = new Node{ "Jupiter Holder", root, local_transform, glm::fmat4{}, 0.2f, &circle_object };
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 2.1f });
+  Node* holder_jup1 = new Node{ "Jupiter moon 1 Holder", holder_jup, local_transform, glm::fmat4{}, 0.7f, &circle_object };
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 3.2f });
+  Node* holder_jup2 = new Node{ "Jupiter moon 2 Holder", holder_jup, local_transform, glm::fmat4{}, 1.2f, &circle_object };
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 4.3f });
+  Node* holder_jup3 = new Node{ "Jupiter moon 3 Holder", holder_jup, local_transform, glm::fmat4{}, 1.3f, &circle_object };
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 5.6f });
+  Node* holder_jup4 = new Node{ "Jupiter moon 4 Holder", holder_jup, local_transform, glm::fmat4{}, 0.9f, &circle_object };
 
+  // Saturn and moons holder
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 32.0f });
   Node* holder_sat = new Node{ "Saturn Holder", root, local_transform, glm::fmat4{}, 0.1f, &circle_object };
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 1.8f });
+  Node* holder_sat1 = new Node{ "Saturn moon 1 Holder", holder_sat, local_transform, glm::fmat4{}, 2.0f, &circle_object };
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 3.8f });
+  Node* holder_sat2 = new Node{ "Saturn moon 2 Holder", holder_sat, local_transform, glm::fmat4{}, 1.0f, &circle_object };
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 1.0f });
+  Node* holder_sat21 = new Node{ "Saturn moon 2 moon 1 Holder", holder_sat2, local_transform, glm::fmat4{}, 0.9f, &circle_object };
+  local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 5.2f });
+  Node* holder_sat3 = new Node{ "Saturn moon 3 Holder", holder_sat, local_transform, glm::fmat4{}, 0.5f, &circle_object };
 
+  // Uranus holder
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 38.0f });
   Node* holder_ura = new Node{ "Uranus Holder", root, local_transform, glm::fmat4{}, 0.05f, &circle_object };
 
+  // Neptune holder
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 44.0f });
   Node* holder_nep = new Node{ "Neptune Holder", root, local_transform, glm::fmat4{}, 0.03f, &circle_object };
   
-  // Add planets to planet holders
+  // Add planets to planet holders and apply scale
+  // Mercury
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.35f });
   GeometryNode* mer = new GeometryNode{ "Mercury", holder_mer, local_transform, glm::fmat4{}, &planet_object};
 
+  // Venus
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.8f });
   GeometryNode* ven = new GeometryNode{ "Venus", holder_ven, local_transform, glm::fmat4{}, &planet_object };
 
+  // Earth and moon
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.8f });
   GeometryNode* ear = new GeometryNode{ "Earth", holder_ear, local_transform, glm::fmat4{}, &planet_object };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.25f });
   GeometryNode* moo = new GeometryNode{ "Moon", holder_moo, local_transform, glm::fmat4{}, &planet_object };
 
+  // Mars
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.45f });
   GeometryNode* mar = new GeometryNode{ "Mars", holder_mar, local_transform, glm::fmat4{}, &planet_object };
 
+  // Jupiter and moons
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.6f });
   GeometryNode* jup = new GeometryNode{ "Jupiter", holder_jup, local_transform, glm::fmat4{}, &planet_object };
+  local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.25f });
+  GeometryNode* jup1 = new GeometryNode{ "Jupiter moon 1", holder_jup1, local_transform, glm::fmat4{}, &planet_object };
+  local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.19f });
+  GeometryNode* jup2 = new GeometryNode{ "Jupiter moon 2", holder_jup2, local_transform, glm::fmat4{}, &planet_object };
+  local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.14f });
+  GeometryNode* jup3 = new GeometryNode{ "Jupiter moon 3", holder_jup3, local_transform, glm::fmat4{}, &planet_object };
+  local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.09f });
+  GeometryNode* jup4 = new GeometryNode{ "Jupiter moon 4", holder_jup4, local_transform, glm::fmat4{}, &planet_object };
 
+  // Saturn and moons
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.4f });
   GeometryNode* sat = new GeometryNode{ "Saturn", holder_sat, local_transform, glm::fmat4{}, &planet_object };
+  local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.05f });
+  GeometryNode* sat1 = new GeometryNode{ "Saturn moon 1", holder_sat1, local_transform, glm::fmat4{}, &planet_object };
+  local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.2f });
+  GeometryNode* sat2 = new GeometryNode{ "Saturn moon 2", holder_sat2, local_transform, glm::fmat4{}, &planet_object };
+  local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.1f });
+  GeometryNode* sat21 = new GeometryNode{ "Saturn moon 2 moon 1", holder_sat21, local_transform, glm::fmat4{}, &planet_object };
+  local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.09f });
+  GeometryNode* sat3 = new GeometryNode{ "Saturn moon 3", holder_sat3, local_transform, glm::fmat4{}, &planet_object };
 
+  // Uranus
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.2f });
   GeometryNode* ura = new GeometryNode{ "Uranus", holder_ura, local_transform, glm::fmat4{}, &planet_object, };
 
+  // Neptune
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.1f });
   GeometryNode* nep = new GeometryNode{ "Neptune", holder_nep, local_transform, glm::fmat4{}, &planet_object };
 

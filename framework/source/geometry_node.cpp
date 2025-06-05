@@ -49,13 +49,9 @@ void GeometryNode::render(std::map<std::string, shader_program> const* shaders, 
   glUseProgram(shaders->at("planet").handle);
   glUniformMatrix4fv(shaders->at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(new_transform));
   // Extra matrix for normal transformation to keep them orthogonal to surface
-  glm::fmat4 normal_matrix = glm::inverseTranspose(glm::inverse(*view_transform) * new_transform);
+  glm::fmat4 normal_matrix = glm::inverseTranspose(new_transform);
   glUniformMatrix4fv(shaders->at("planet").u_locs.at("NormalMatrix"), 1, GL_FALSE, glm::value_ptr(normal_matrix));
 
-  glm::vec4 frag_pos_v4 = new_transform * glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };
-  glm::vec3 frag_pos{ frag_pos_v4[0] / frag_pos_v4[3], frag_pos_v4[1] / frag_pos_v4[3], frag_pos_v4[2] / frag_pos_v4[3] };
-
-  glUniform3f(glGetUniformLocation(geometry_->vertex_AO, "frag_pos"), frag_pos[0], frag_pos[1], frag_pos[2]);
   if (get_name() == "Sun")
   {
     glUniform1i(glGetUniformLocation(geometry_->vertex_AO, "is_sun"), 1);
