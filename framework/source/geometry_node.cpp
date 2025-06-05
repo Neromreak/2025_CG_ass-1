@@ -44,21 +44,28 @@ void GeometryNode::render(std::map<std::string, shader_program> const* shaders, 
   // Inherit local transformation of parent
   glm::fmat4 new_transform = transform * get_local_transform();
 
-  // Actual rendering:
-  // Bind shader to upload uniforms
-  glUseProgram(shaders->at("planet").handle);
-  glUniformMatrix4fv(shaders->at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(new_transform));
-  // Extra matrix for normal transformation to keep them orthogonal to surface
-  glm::fmat4 normal_matrix = glm::inverseTranspose(new_transform);
-  glUniformMatrix4fv(shaders->at("planet").u_locs.at("NormalMatrix"), 1, GL_FALSE, glm::value_ptr(normal_matrix));
 
   if (get_name() == "Sun")
   {
-    glUniform1i(glGetUniformLocation(geometry_->vertex_AO, "is_sun"), 1);
+    // Actual rendering:
+    // Bind shader to upload uniforms
+    glUseProgram(shaders->at("sun").handle);
+    glUniformMatrix4fv(shaders->at("sun").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(new_transform));
+    // Extra matrix for normal transformation to keep them orthogonal to surface
+    glm::fmat4 normal_matrix = glm::inverseTranspose(new_transform);
+    glUniformMatrix4fv(shaders->at("sun").u_locs.at("NormalMatrix"), 1, GL_FALSE, glm::value_ptr(normal_matrix));
+    glm::vec3 cam_pos{ (*view_transform)[3][0] / (*view_transform)[3][3], (*view_transform)[3][1] / (*view_transform)[3][3] , (*view_transform)[3][2] / (*view_transform)[3][3] };
+    glUniform3f(shaders->at("sun").u_locs.at("CamPos"), cam_pos[0], cam_pos[1], cam_pos[2]);
   }
   else
   {
-    glUniform1i(glGetUniformLocation(geometry_->vertex_AO, "is_sun"), 0);
+    // Actual rendering:
+    // Bind shader to upload uniforms
+    glUseProgram(shaders->at("planet").handle);
+    glUniformMatrix4fv(shaders->at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(new_transform));
+    // Extra matrix for normal transformation to keep them orthogonal to surface
+    glm::fmat4 normal_matrix = glm::inverseTranspose(new_transform);
+    glUniformMatrix4fv(shaders->at("planet").u_locs.at("NormalMatrix"), 1, GL_FALSE, glm::value_ptr(normal_matrix));
   }
 
   // Bind the VAO to draw

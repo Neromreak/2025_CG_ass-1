@@ -4,8 +4,6 @@ in  vec3 pass_Normal;
 in  vec3 pass_Pos;
 out vec4 out_Color;
 
-uniform int is_sun;
-
 void main() {
   vec3 light_direction = normalize(vec3(0.0f, 0.0f, 0.0f) - pass_Pos);
   
@@ -17,9 +15,4 @@ void main() {
   vec4 diffuse = vec4(theta * 0.9f, theta * 0.9f, theta * 0.9f, 1.0f);
   vec4 ambient = vec4(0.05f, 0.05f, 0.05f, 1.0f);
   out_Color = ambient + diffuse;
-
-  if(is_sun == 1)
-  {
-    out_Color = vec4(0.9f, 0.6f, 0.2f, 1.0f);
-  }
 }

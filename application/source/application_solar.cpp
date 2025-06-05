@@ -147,6 +147,11 @@ void ApplicationSolar::uploadView() {
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(view_matrix));
 
+  // Bind and upload sun shader
+  glUseProgram(m_shaders.at("sun").handle);
+  glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("ViewMatrix"),
+                     1, GL_FALSE, glm::value_ptr(view_matrix));
+
   // Bind and upload vao shader
   glUseProgram(m_shaders.at("vao").handle);
   glUniformMatrix4fv(m_shaders.at("vao").u_locs.at("ViewMatrix"),
@@ -159,6 +164,11 @@ void ApplicationSolar::uploadProjection() {
   glUseProgram(m_shaders.at("planet").handle);
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ProjectionMatrix"),
                      1, GL_FALSE, glm::value_ptr(m_view_projection));
+
+  // Bind and upload sun shader
+  glUseProgram(m_shaders.at("sun").handle);
+  glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("ProjectionMatrix"),
+    1, GL_FALSE, glm::value_ptr(m_view_projection));
 
   // Bind and upload vao shader
   glUseProgram(m_shaders.at("vao").handle);
@@ -186,6 +196,18 @@ void ApplicationSolar::initializeShaderPrograms()
   m_shaders.at("planet").u_locs["ModelMatrix"] = -1;
   m_shaders.at("planet").u_locs["ViewMatrix"] = -1;
   m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
+
+
+  // Sun shader:
+  // Store shader program objects in container
+  m_shaders.emplace("sun", shader_program{ {{GL_VERTEX_SHADER,m_resource_path + "shaders/sun.vert"},
+                                           {GL_FRAGMENT_SHADER, m_resource_path + "shaders/sun.frag"}} });
+  // Request uniform locations for shader program
+  m_shaders.at("sun").u_locs["NormalMatrix"] = -1;
+  m_shaders.at("sun").u_locs["ModelMatrix"] = -1;
+  m_shaders.at("sun").u_locs["ViewMatrix"] = -1;
+  m_shaders.at("sun").u_locs["ProjectionMatrix"] = -1;
+  m_shaders.at("sun").u_locs["CamPos"] = -1;
 
 
   // VAO shader:
