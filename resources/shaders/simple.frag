@@ -13,6 +13,8 @@ uniform vec3 LightColors[128];
 uniform float LightIntensities[128];
 uniform vec3 ObjColor;
 uniform vec3 CamPos;
+uniform int IsCelShading;
+uniform float Scale;
 
 // Out variables
 out vec4 out_Color;
@@ -20,26 +22,26 @@ out vec4 out_Color;
 
 void main()
 {
-  // Temp DEBUG
-  vec3 temp = (LightPositions[0] + LightColors[0] + ObjColor * LightIntensities[0]).xyz;
-  
-
-  // ########### AMBIENT: #############################################
+  // ########### AMBIENT: ###########################################
   float ambient_factor = 0.05f;
   vec3 ambient = vec3(ambient_factor * ObjColor[0],
 		      ambient_factor * ObjColor[1],
 		      ambient_factor * ObjColor[2]);
   
 
-  // ########### DIFFUSE: #############################################
   // Normalize normal vector
   vec3 normal = normalize(pass_Normal);
+
+  // Cam direction points towards the camera
+  vec3 cam_direction = normalize(CamPos - pass_Pos);
+  float cam_distance = distance(CamPos, pass_Pos);
   
   // For each light
   vec3 diffuse = vec3(0.0f, 0.0f, 0.0f);
   vec3 specular = vec3(0.0f, 0.0f, 0.0f);
   for(int i = 0; i < LightCount; ++i)
-  {    
+  {
+    // ########### DIFFUSE: #########################################
     // Light direction points towards the light (so that cos_theta can easily be
     // ...calculated with the dot product)
     vec3 light_direction = normalize(LightPositions[i] - pass_Pos);
@@ -54,10 +56,7 @@ void main()
     diffuse += diffuse_part * LightIntensities[i];
    
 
-    // ########### SPECULAR: ##########################################
-    // Cam direction points towards the camera
-    vec3 cam_direction = normalize(CamPos - pass_Pos);
-
+    // ########### SPECULAR: ########################################
     vec3 light_reflect_direction = reflect(-light_direction, normal);
 
     // Alpha = angle between light reflection direction and camera direction
@@ -71,10 +70,35 @@ void main()
   }
   
 
-  // ########### FINAL COLOR: #########################################
+  // ########### FINAL COLOR: #######################################
   out_Color = vec4(ambient + diffuse + specular, 1.0f);
+  
 
-  // DEBUG
-  out_Color += vec4(temp * 0.0001f, 1.0f);
-  out_Color += vec4(CamPos * 0.0001f, 1.0f);
+  // ########### CEL SHADING: #######################################
+  if(IsCelShading == 1)
+  {
+    // Add white outline around sphere
+    // Outline threshold should be uniform for all spheres
+    float cel_shading_outline_threshold = clamp(0.8f - (pow(Scale, 0.5f) * 0.25f), 0.2f, 0.8f);
+    cel_shading_outline_threshold *= pow(cam_distance, 0.2f) * 0.5f;
+    
+    // Beta = angle between surface normal and camera direction
+    float cos_beta = max(dot(normal, cam_direction), 0.0f);
+
+    if(cos_beta < cel_shading_outline_threshold)
+    {
+      out_Color = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+    else
+    {
+      // Apply color discretization
+      int cel_shade_count = 5;
+      vec3 new_Color = vec3(0.0f, 0.0f, 0.0f);
+      for(int i = 0; i < 3; ++i)
+      {
+        new_Color[i] = round(out_Color[i] * cel_shade_count) / cel_shade_count;
+      }
+      out_Color = vec4(new_Color, 1.0f);
+    }
+  }
 }

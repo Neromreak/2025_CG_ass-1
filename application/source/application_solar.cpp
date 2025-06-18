@@ -262,7 +262,7 @@ void ApplicationSolar::uploadUniforms() {
 
 
 
-// ########### INITIALIZATION FUNCTIONS ###################
+// ########### INITIALIZATION FUNCTIONS #############################
 // Load shader sources
 void ApplicationSolar::initializeShaderPrograms()
 {
@@ -282,6 +282,8 @@ void ApplicationSolar::initializeShaderPrograms()
   m_shaders.at("planet").u_locs["LightIntensities"] = -1;
   m_shaders.at("planet").u_locs["ObjColor"] = -1;
   m_shaders.at("planet").u_locs["CamPos"] = -1;
+  m_shaders.at("planet").u_locs["IsCelShading"] = -1;
+  m_shaders.at("planet").u_locs["Scale"] = -1;
   
 
   // Sun shader:
@@ -293,7 +295,10 @@ void ApplicationSolar::initializeShaderPrograms()
   m_shaders.at("sun").u_locs["ModelMatrix"] = -1;
   m_shaders.at("sun").u_locs["ViewMatrix"] = -1;
   m_shaders.at("sun").u_locs["ProjectionMatrix"] = -1;
+
   m_shaders.at("sun").u_locs["CamPos"] = -1;
+  m_shaders.at("sun").u_locs["IsCelShading"] = -1;
+  m_shaders.at("sun").u_locs["Scale"] = -1;
 
 
   // VAO shader:
@@ -639,7 +644,7 @@ void ApplicationSolar::initializeScene()
 
 
 
-// ########### INPUT HANDLING #############################
+// ########### INPUT HANDLING #######################################
 // Handle key Input
 void ApplicationSolar::keyCallback(int key, int action, int mods)
 {
@@ -672,18 +677,51 @@ void ApplicationSolar::keyCallback(int key, int action, int mods)
   {
     move_y = 1;
   }
+  if (key == GLFW_KEY_1 && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  {
+    // Switch cel shading off
+    if (cel_shading)
+    {
+      cel_shading = false;
+
+      glUseProgram(m_shaders.at("planet").handle);
+      glUniform1i(m_shaders.at("planet").u_locs.at("IsCelShading"), 0);
+      
+      glUseProgram(m_shaders.at("sun").handle);
+      glUniform1i(m_shaders.at("sun").u_locs.at("IsCelShading"), 0);
+    }
+  }
+  if (key == GLFW_KEY_2 && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  {
+    // Switch cell shading on
+    if (!cel_shading)
+    {
+      cel_shading = true;
+
+      glUseProgram(m_shaders.at("planet").handle);
+      glUniform1i(m_shaders.at("planet").u_locs.at("IsCelShading"), 1);
+
+      glUseProgram(m_shaders.at("sun").handle);
+      glUniform1i(m_shaders.at("sun").u_locs.at("IsCelShading"), 1);
+    }
+  }
 
   // Log for debugging on key H
   if (key == GLFW_KEY_H && (action == GLFW_PRESS))
   {
     // DEBUG
     std::cout << "DEBUG INFO:\n";
-    std::cout << "m_view_transform: ---------------------\n";
-    std::cout << m_view_transform[0][0] << " " << m_view_transform[1][0] << " " << m_view_transform[2][0] << " " << m_view_transform[3][0] << "\n";
-    std::cout << m_view_transform[0][1] << " " << m_view_transform[1][1] << " " << m_view_transform[2][1] << " " << m_view_transform[3][1] << "\n";
-    std::cout << m_view_transform[0][2] << " " << m_view_transform[1][2] << " " << m_view_transform[2][2] << " " << m_view_transform[3][2] << "\n";
-    std::cout << m_view_transform[0][3] << " " << m_view_transform[1][3] << " " << m_view_transform[2][3] << " " << m_view_transform[3][3] << "\n";
-    std::cout << "\n";
+    std::cout << "m_view_transform:\n";
+    print_glm4matf(m_view_transform);
+    std::cout << "local_transform:\n";
+    glm::fmat4 local_transform{};
+    print_glm4matf(local_transform);
+    std::cout << "after scaling:\n";
+    local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.5f });
+    print_glm4matf(local_transform);
+    std::cout << "after rotating:\n";
+    local_transform = glm::rotate(local_transform, 0.4f, glm::vec3{0.0f, 1.0f, 0.0f});
+    print_glm4matf(local_transform);
   }
 }
 
@@ -708,7 +746,11 @@ void ApplicationSolar::resizeCallback(unsigned width, unsigned height) {
 // Main
 int main(int argc, char* argv[])
 {
-  std::cout << "Use WASD to move around. Use QE to go up and down. Use the mouse to move the camera.\n";
+  std::cout << "Hints:\n"
+            << "  Use WASD to move around.\n"
+            << "  Use QE to go up and down.\n"
+            << "  Use the mouse to move the camera.\n"
+            << "  Use 1/2 to switch between cel shading and smooth shading.\n";
 
   // Start the render applicaton
   Application::run<ApplicationSolar>(argc, argv, 3, 2);

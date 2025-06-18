@@ -51,6 +51,9 @@ void GeometryNode::render(std::map<std::string, shader_program> const* shaders, 
     // Camera Position
     glm::vec3 cam_pos{ (*view_transform)[3][0] / (*view_transform)[3][3], (*view_transform)[3][1] / (*view_transform)[3][3] , (*view_transform)[3][2] / (*view_transform)[3][3] };
     glUniform3f(shaders->at("sun").u_locs.at("CamPos"), cam_pos[0], cam_pos[1], cam_pos[2]);
+    // Object scale (on one axis suffices as the planets are evenly scaled)
+    float scale_x = glm::length(glm::vec3(get_local_transform()[0]));
+    glUniform1f(shaders->at("sun").u_locs.at("Scale"), scale_x);
   }
   else
   {
@@ -68,6 +71,9 @@ void GeometryNode::render(std::map<std::string, shader_program> const* shaders, 
     // Camera Position
     glm::vec3 cam_pos{ (*view_transform)[3][0] / (*view_transform)[3][3], (*view_transform)[3][1] / (*view_transform)[3][3] , (*view_transform)[3][2] / (*view_transform)[3][3] };
     glUniform3f(shaders->at("planet").u_locs.at("CamPos"), cam_pos[0], cam_pos[1], cam_pos[2]);
+    // Object scale (on one axis suffices as the planets are evenly scaled)
+    float scale_x = glm::length(glm::vec3(get_local_transform()[0]));
+    glUniform1f(shaders->at("planet").u_locs.at("Scale"), scale_x);
   }
 
   // Bind the VAO to draw

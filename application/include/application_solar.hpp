@@ -55,7 +55,7 @@ class ApplicationSolar : public Application {
 
   SceneGraph* scene;
 
-  // Variables for movement
+  // Variables for input
   float movement_speed = 0.10f;
   int move_x = 0;
   int move_y = 0;
@@ -63,6 +63,7 @@ class ApplicationSolar : public Application {
   float rotation_speed = 0.001f;
   float rot_h = 0.0f;
   float rot_v= 0.0f;
+  bool cel_shading = false;
 };
 
 #endif
