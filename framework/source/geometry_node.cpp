@@ -42,10 +42,13 @@ void GeometryNode::render(std::map<std::string, shader_program> const* shaders, 
     // Actual rendering:
     // Bind shader to upload uniforms
     glUseProgram(shaders->at("sun").handle);
+    // Model Matrix
     glUniformMatrix4fv(shaders->at("sun").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(new_transform));
+    // Normal Matrix
     // Extra matrix for normal transformation to keep them orthogonal to surface
     glm::fmat4 normal_matrix = glm::inverseTranspose(new_transform);
     glUniformMatrix4fv(shaders->at("sun").u_locs.at("NormalMatrix"), 1, GL_FALSE, glm::value_ptr(normal_matrix));
+    // Camera Position
     glm::vec3 cam_pos{ (*view_transform)[3][0] / (*view_transform)[3][3], (*view_transform)[3][1] / (*view_transform)[3][3] , (*view_transform)[3][2] / (*view_transform)[3][3] };
     glUniform3f(shaders->at("sun").u_locs.at("CamPos"), cam_pos[0], cam_pos[1], cam_pos[2]);
   }
@@ -54,11 +57,17 @@ void GeometryNode::render(std::map<std::string, shader_program> const* shaders, 
     // Actual rendering:
     // Bind shader to upload uniforms
     glUseProgram(shaders->at("planet").handle);
+    // Model Matrix
     glUniformMatrix4fv(shaders->at("planet").u_locs.at("ModelMatrix"), 1, GL_FALSE, glm::value_ptr(new_transform));
+    // Normal Matrix
     // Extra matrix for normal transformation to keep them orthogonal to surface
     glm::fmat4 normal_matrix = glm::inverseTranspose(new_transform);
     glUniformMatrix4fv(shaders->at("planet").u_locs.at("NormalMatrix"), 1, GL_FALSE, glm::value_ptr(normal_matrix));
+    // Object Color
     glUniform3fv(shaders->at("planet").u_locs.at("ObjColor"), 1, glm::value_ptr(color_));
+    // Camera Position
+    glm::vec3 cam_pos{ (*view_transform)[3][0] / (*view_transform)[3][3], (*view_transform)[3][1] / (*view_transform)[3][3] , (*view_transform)[3][2] / (*view_transform)[3][3] };
+    glUniform3f(shaders->at("planet").u_locs.at("CamPos"), cam_pos[0], cam_pos[1], cam_pos[2]);
   }
 
   // Bind the VAO to draw

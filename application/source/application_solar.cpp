@@ -194,9 +194,16 @@ void ApplicationSolar::render_first_frame() const
     remaining_nodes.pop_front();
   }
 
+  if (light_positions.size() > 128)
+  {
+    throw "Too many lights, the frag shader limits the light amount (can be adjusted in the frag shader)";
+  }
+
   // Give light parameters (They won't change throughout the life cycle)
   glUseProgram(m_shaders.at("planet").handle);
 
+  glUniform1i(m_shaders.at("planet").u_locs.at("LightCount"),
+    light_positions.size());
   glUniform3fv(m_shaders.at("planet").u_locs.at("LightPositions"),
     light_positions.size(), glm::value_ptr(light_positions[0]));
   glUniform3fv(m_shaders.at("planet").u_locs.at("LightColors"),
@@ -269,10 +276,12 @@ void ApplicationSolar::initializeShaderPrograms()
   m_shaders.at("planet").u_locs["ViewMatrix"] = -1;
   m_shaders.at("planet").u_locs["ProjectionMatrix"] = -1;
 
+  m_shaders.at("planet").u_locs["LightCount"] = -1;
   m_shaders.at("planet").u_locs["LightPositions"] = -1;
   m_shaders.at("planet").u_locs["LightColors"] = -1;
   m_shaders.at("planet").u_locs["LightIntensities"] = -1;
   m_shaders.at("planet").u_locs["ObjColor"] = -1;
+  m_shaders.at("planet").u_locs["CamPos"] = -1;
   
 
   // Sun shader:
@@ -296,6 +305,7 @@ void ApplicationSolar::initializeShaderPrograms()
   m_shaders.at("vao").u_locs["ViewMatrix"] = -1;
   m_shaders.at("vao").u_locs["ProjectionMatrix"] = -1;
 }
+
 
 // Load models (the raw model files containing the vertices information)
 void ApplicationSolar::initializeGeometry()
@@ -574,7 +584,7 @@ void ApplicationSolar::initializeScene()
   // Jupiter and moons
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.6f });
   GeometryNode* jup = new GeometryNode{ "Jupiter", holder_jup, local_transform, glm::fmat4{},
-                                        & planet_object, glm::vec3{ 0.7f, 0.5f, 0.5f } };
+                                        & planet_object, glm::vec3{ 0.65f, 0.65f, 0.5f } };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.25f });
   GeometryNode* jup1 = new GeometryNode{ "Jupiter moon 1", holder_jup1, local_transform, glm::fmat4{},
                                         & planet_object, glm::vec3{ 0.3f, 0.2f, 0.4f } };
@@ -591,7 +601,7 @@ void ApplicationSolar::initializeScene()
   // Saturn and moons
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.4f });
   GeometryNode* sat = new GeometryNode{ "Saturn", holder_sat, local_transform, glm::fmat4{},
-                                        & planet_object, glm::vec3{ 0.65f, 0.65f, 0.5f } };
+                                        & planet_object, glm::vec3{ 0.7f, 0.5f, 0.5f } };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.05f });
   GeometryNode* sat1 = new GeometryNode{ "Saturn moon 1", holder_sat1, local_transform, glm::fmat4{},
                                         & planet_object, glm::vec3{ 0.5f, 0.5f, 0.5f } };
