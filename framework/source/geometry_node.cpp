@@ -3,19 +3,21 @@
 
 // Constructors
 GeometryNode::GeometryNode(std::string const& name, Node* parent):
-  GeometryNode::GeometryNode(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f, nullptr)
+  GeometryNode::GeometryNode(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f, nullptr, { 1.0f, 1.0f, 1.0f })
 { }
-GeometryNode::GeometryNode(std::string const& name, Node* parent, model_object const* geometry):
-  GeometryNode::GeometryNode(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f, geometry)
+GeometryNode::GeometryNode(std::string const& name, Node* parent, model_object const* geometry, glm::vec3 const& color):
+  GeometryNode::GeometryNode(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f, geometry, color)
 { }
 GeometryNode::GeometryNode(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform,
-  model_object const* geometry) :
-  GeometryNode::GeometryNode(name, parent, {}, local_transform, world_transform, 0.0f, geometry)
+  model_object const* geometry, glm::vec3 const& color) :
+  GeometryNode::GeometryNode(name, parent, {}, local_transform, world_transform, 0.0f, geometry, color)
 { }
 GeometryNode::GeometryNode(std::string const& name, Node* parent, std::list<Node*> const& children,
-  glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, model_object const* geometry):
+  glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, model_object const* geometry,
+  glm::vec3 const& color):
   Node::Node(name, parent, children, local_transform, world_transform, animation, nullptr),
-  geometry_{ geometry }
+  geometry_{ geometry },
+  color_{color}
 { }
 
 // Getter Setter
@@ -31,16 +33,6 @@ void GeometryNode::set_model(model_object const* geometry_in)
 // Methods
 void GeometryNode::render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform, glm::fmat4 transform) const
 {
-  // Method called to traverse tree and render all nodes
-  /*
-  // DEBUG
-  std::cout << get_name() << "---------------------\n";
-  std::cout << transform[0][0] << " " << transform[1][0] << " " << transform[2][0] << " " << transform[3][0] << "\n";
-  std::cout << transform[0][1] << " " << transform[1][1] << " " << transform[2][1] << " " << transform[3][1] << "\n";
-  std::cout << transform[0][2] << " " << transform[1][2] << " " << transform[2][2] << " " << transform[3][2] << "\n";
-  std::cout << transform[0][3] << " " << transform[1][3] << " " << transform[2][3] << " " << transform[3][3] << "\n";
-  */
- 
   // Inherit local transformation of parent
   glm::fmat4 new_transform = transform * get_local_transform();
 
@@ -66,6 +58,7 @@ void GeometryNode::render(std::map<std::string, shader_program> const* shaders, 
     // Extra matrix for normal transformation to keep them orthogonal to surface
     glm::fmat4 normal_matrix = glm::inverseTranspose(new_transform);
     glUniformMatrix4fv(shaders->at("planet").u_locs.at("NormalMatrix"), 1, GL_FALSE, glm::value_ptr(normal_matrix));
+    glUniform3fv(shaders->at("planet").u_locs.at("ObjColor"), 1, glm::value_ptr(color_));
   }
 
   // Bind the VAO to draw

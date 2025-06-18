@@ -25,6 +25,7 @@ class ApplicationSolar : public Application {
 
   // Draw all objects
   void render() const override;
+  void render_first_frame() const;
 
   // Execute logic and physics
   void physics() override;
