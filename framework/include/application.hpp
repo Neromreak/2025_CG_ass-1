@@ -32,7 +32,7 @@ class Application {
   // Update uniform locations and values
   inline virtual void uploadUniforms() {};
   // React to key input
-  inline virtual void keyCallback(int key, int action, int mods) {};
+  inline virtual void keyCallback(GLFWwindow* window, int key, int action, int mods) {};
   // Handle delta mouse movement input
   inline virtual void mouseCallback(double pos_x, double pos_y) {};
   // Update framebuffer textures

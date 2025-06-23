@@ -35,4 +35,6 @@ private:
 // Helper functions
 void print_glm4matf(glm::fmat4 const& matrix);
 
+float lerp(float a, float b, float factor);
+
 #endif

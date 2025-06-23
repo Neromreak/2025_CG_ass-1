@@ -42,3 +42,8 @@ void print_glm4matf(glm::fmat4 const& m)
   std::cout << m[0][2] << " " << m[1][2] << " " << m[2][2] << " " << m[3][2] << "\n";
   std::cout << m[0][3] << " " << m[1][3] << " " << m[2][3] << " " << m[3][3] << "\n";
 }
+
+float lerp(float a, float b, float factor)
+{
+  return a + ((b - a) * factor);
+}

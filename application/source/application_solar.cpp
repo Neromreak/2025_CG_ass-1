@@ -24,6 +24,9 @@ using namespace gl;
 
 #include <iostream>
 #include <numbers>
+#include <chrono>
+
+
 
 ApplicationSolar::ApplicationSolar(std::string const& resource_path):
   Application{resource_path},
@@ -65,6 +68,14 @@ ApplicationSolar::~ApplicationSolar()
 // ########### LIFE CYCLE FUNCTIONS #################################
 void ApplicationSolar::physics()
 {
+  // Get delta time for frame rate independent physics
+  static auto time_last = std::chrono::steady_clock::now();
+  auto time_now = std::chrono::steady_clock::now();
+  long long delta_time_ms = (std::chrono::duration_cast<std::chrono::milliseconds>(time_now - time_last)).count();
+  delta_time_ms = std::min(delta_time_ms, (long long)50);
+  time_last = time_now;
+
+
   glm::fmat4 view_t = m_view_transform;
 
   glm::fmat4 cam2origin;
@@ -103,31 +114,31 @@ void ApplicationSolar::physics()
   }
 
   // MOVEMENT | Apply previously captured movement onto the camera:
-  bool has_pos_changed = move_x != 0 || move_y != 0 || move_z != 0;
-  glm::fmat4 translation{0.0f};
+  static glm::vec3 translation_lerp_aim{ m_view_transform[3][0] / m_view_transform[3][3],
+                                         m_view_transform[3][1] / m_view_transform[3][3],
+                                         m_view_transform[3][2] / m_view_transform[3][3] };
 
-  // Update view only if camera moved
-  if(has_pos_changed)
+  // Calculate movement
+  if (move_x != 0)
   {
-    // Calculate movement
-    if (move_x != 0)
-    {
-      translation[3][0] += left_dir_h[0] * movement_speed * move_x;
-      translation[3][2] += left_dir_h[2] * movement_speed * move_x;
-    }
-    if (move_y != 0)
-    {
-      translation[3][1] += movement_speed * move_y;
-    }
-    if (move_z != 0)
-    {
-      translation[3][0] += view_dir_h[0] * movement_speed * move_z;
-      translation[3][2] += view_dir_h[2] * movement_speed * move_z;
-    }
-
-    // Apply transformation in world space (no local oriented movement)
-    m_view_transform += translation;
+    translation_lerp_aim[0] += left_dir_h[0] * movement_speed * move_x * delta_time_ms;
+    translation_lerp_aim[2] += left_dir_h[2] * movement_speed * move_x * delta_time_ms;
   }
+  if (move_y != 0)
+  {
+    translation_lerp_aim[1] += movement_speed * move_y * delta_time_ms;
+  }
+  if (move_z != 0)
+  {
+    translation_lerp_aim[0] += view_dir_h[0] * movement_speed * move_z * delta_time_ms;
+    translation_lerp_aim[2] += view_dir_h[2] * movement_speed * move_z * delta_time_ms;
+  }
+
+  // Apply transformation in world space (no local oriented movement)
+  // Lerp movement for a more smooth feeling
+  m_view_transform[3][0] = lerp(m_view_transform[3][0], translation_lerp_aim[0], 0.015f * delta_time_ms);
+  m_view_transform[3][1] = lerp(m_view_transform[3][1], translation_lerp_aim[1], 0.015f * delta_time_ms);
+  m_view_transform[3][2] = lerp(m_view_transform[3][2], translation_lerp_aim[2], 0.015f * delta_time_ms);
 
   // Update the shaders
   uploadView();
@@ -646,38 +657,39 @@ void ApplicationSolar::initializeScene()
 
 // ########### INPUT HANDLING #######################################
 // Handle key Input
-void ApplicationSolar::keyCallback(int key, int action, int mods)
+void ApplicationSolar::keyCallback(GLFWwindow* window, int key, int action, int mods)
 {
   // Read keys and store user controls
   move_x = 0;
   move_y = 0;
   move_z = 0;
 
-  if (key == GLFW_KEY_W  && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_REPEAT)
   {
     move_z = -1;
   }
-  if (key == GLFW_KEY_A  && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_A) == GLFW_REPEAT)
   {
     move_x = -1;
   }
-  if (key == GLFW_KEY_S  && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_REPEAT)
   {
     move_z = 1;
   }
-  if (key == GLFW_KEY_D  && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_D) == GLFW_REPEAT)
   {
     move_x = 1;
   }
-  if (key == GLFW_KEY_Q  && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_Q) == GLFW_REPEAT)
   {
     move_y = -1;
   }
-  if (key == GLFW_KEY_E  && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_E) == GLFW_REPEAT)
   {
     move_y = 1;
   }
-  if (key == GLFW_KEY_1 && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
   {
     // Switch cel shading off
     if (cel_shading)
@@ -691,7 +703,7 @@ void ApplicationSolar::keyCallback(int key, int action, int mods)
       glUniform1i(m_shaders.at("sun").u_locs.at("IsCelShading"), 0);
     }
   }
-  if (key == GLFW_KEY_2 && (action == GLFW_PRESS || action == GLFW_REPEAT))
+  if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
   {
     // Switch cell shading on
     if (!cel_shading)
@@ -707,10 +719,13 @@ void ApplicationSolar::keyCallback(int key, int action, int mods)
   }
 
   // Log for debugging on key H
-  if (key == GLFW_KEY_H && (action == GLFW_PRESS))
+  if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
   {
     // DEBUG
     std::cout << "DEBUG INFO:\n";
+    std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+      std::chrono::system_clock::now().time_since_epoch());
+    std::cout << "Current time: " << ms.count() << "ms\n";
     std::cout << "m_view_transform:\n";
     print_glm4matf(m_view_transform);
     std::cout << "local_transform:\n";

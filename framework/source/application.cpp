@@ -51,7 +51,8 @@ void Application::updateUniformLocations() {
 
 ///////////////////////////// callback functions for window events ////////////
 // handle key input
-void Application::key_callback(GLFWwindow* m_window, int key, int action, int mods) {
+void Application::key_callback(GLFWwindow* m_window, int key, int action, int mods)
+{
   // handle special keys
   if ((key == GLFW_KEY_ESCAPE) && action == GLFW_PRESS) {
     glfwSetWindowShouldClose(m_window, 1);
@@ -61,7 +62,7 @@ void Application::key_callback(GLFWwindow* m_window, int key, int action, int mo
   }
   // else pass input to derived class
   else {
-    keyCallback(key, action, mods);
+    keyCallback(m_window, key, action, mods);
   }
 }
 

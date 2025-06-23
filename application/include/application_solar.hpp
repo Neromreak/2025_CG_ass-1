@@ -17,7 +17,7 @@ class ApplicationSolar : public Application {
   ~ApplicationSolar();
 
   // React to key input
-  void keyCallback(int key, int action, int mods) override;
+  void keyCallback(GLFWwindow* window, int key, int action, int mods) override;
   // Handle delta mouse movement input
   void mouseCallback(double pos_x, double pos_y) override;
   // Handle resizing
@@ -56,7 +56,7 @@ class ApplicationSolar : public Application {
   SceneGraph* scene;
 
   // Variables for input
-  float movement_speed = 0.10f;
+  float movement_speed = 0.019f;
   int move_x = 0;
   int move_y = 0;
   int move_z = 0;
