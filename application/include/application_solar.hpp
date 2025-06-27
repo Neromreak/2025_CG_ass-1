@@ -32,6 +32,7 @@ class ApplicationSolar : public Application {
 
  protected:
   void initializeShaderPrograms();
+  void initializeTextures();
   void initializeGeometry();
   std::vector<float> generateGeometryStars();
   std::vector<float> generateGeometryCircle();
@@ -43,10 +44,13 @@ class ApplicationSolar : public Application {
   // Upload view matrix
   void uploadView();
 
-// CPU representation of model
+// Model objects (CPU representation of model)
   model_object planet_object;
   model_object stars_object;
   model_object circle_object;
+
+// Texture objects (CPU representation of textures)
+  texture_object earth_texture;
   
   // Camera transform matrix
   glm::fmat4 m_view_transform;
@@ -54,6 +58,8 @@ class ApplicationSolar : public Application {
   glm::fmat4 m_view_projection;
 
   SceneGraph* scene;
+
+  const float SIMULATION_SPEED = 0.2f;
 
   // Variables for input
   float movement_speed = 0.019f;

@@ -3,21 +3,22 @@
 
 // Constructors
 GeometryNode::GeometryNode(std::string const& name, Node* parent):
-  GeometryNode::GeometryNode(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f, nullptr, { 1.0f, 1.0f, 1.0f })
+  GeometryNode::GeometryNode(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f, nullptr, { 1.0f, 1.0f, 1.0f }, nullptr)
 { }
-GeometryNode::GeometryNode(std::string const& name, Node* parent, model_object const* geometry, glm::vec3 const& color):
-  GeometryNode::GeometryNode(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f, geometry, color)
+GeometryNode::GeometryNode(std::string const& name, Node* parent, model_object const* geometry, glm::vec3 const& color, texture_object const* texture):
+  GeometryNode::GeometryNode(name, parent, {}, glm::fmat4{}, glm::fmat4{}, 0.0f, geometry, color, texture)
 { }
 GeometryNode::GeometryNode(std::string const& name, Node* parent, glm::fmat4 const& local_transform, glm::fmat4 const& world_transform,
-  model_object const* geometry, glm::vec3 const& color) :
-  GeometryNode::GeometryNode(name, parent, {}, local_transform, world_transform, 0.0f, geometry, color)
+  model_object const* geometry, glm::vec3 const& color, texture_object const* texture) :
+  GeometryNode::GeometryNode(name, parent, {}, local_transform, world_transform, 0.0f, geometry, color, texture)
 { }
 GeometryNode::GeometryNode(std::string const& name, Node* parent, std::list<Node*> const& children,
   glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, model_object const* geometry,
-  glm::vec3 const& color):
+  glm::vec3 const& color, texture_object const* texture):
   Node::Node(name, parent, children, local_transform, world_transform, animation, nullptr),
   geometry_{ geometry },
-  color_{color}
+  color_{color},
+  texture_{texture}
 { }
 
 // Getter Setter
@@ -37,9 +38,9 @@ void GeometryNode::render(std::map<std::string, shader_program> const* shaders, 
   glm::fmat4 new_transform = transform * get_local_transform();
 
 
+  // Actual rendering:
   if (get_name() == "Sun")
   {
-    // Actual rendering:
     // Bind shader to upload uniforms
     glUseProgram(shaders->at("sun").handle);
     // Model Matrix
@@ -57,7 +58,6 @@ void GeometryNode::render(std::map<std::string, shader_program> const* shaders, 
   }
   else
   {
-    // Actual rendering:
     // Bind shader to upload uniforms
     glUseProgram(shaders->at("planet").handle);
     // Model Matrix
