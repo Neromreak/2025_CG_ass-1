@@ -24,6 +24,7 @@ using namespace gl;
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
+#include <fstream>
 #include <numbers>
 #include <chrono>
 
@@ -293,11 +294,14 @@ void ApplicationSolar::initializeShaderPrograms()
   m_shaders.at("planet").u_locs["LightPositions"] = -1;
   m_shaders.at("planet").u_locs["LightColors"] = -1;
   m_shaders.at("planet").u_locs["LightIntensities"] = -1;
+
   m_shaders.at("planet").u_locs["ObjColor"] = -1;
   m_shaders.at("planet").u_locs["CamPos"] = -1;
   m_shaders.at("planet").u_locs["IsCelShading"] = -1;
   m_shaders.at("planet").u_locs["Scale"] = -1;
   
+  m_shaders.at("planet").u_locs["TextureColor"] = -1;
+
 
   // Sun shader:
   // Store shader program objects in container
@@ -330,30 +334,49 @@ void ApplicationSolar::initializeTextures()
 {
   // Load earth texture:
   earth_texture.target = GL_TEXTURE_2D;
-  pixel_data earth_texture_data = texture_loader::file(m_resource_path + "textures/earthmap1k.jpg"); // TODO maybe in freestore?
+  // 24bit PNG worked. JPG has some issues where the buffer size doesn't account for the alpha values but still puts alpha in the buffer
+  pixel_data* earth_texture_data = new pixel_data(texture_loader::file(m_resource_path + "textures/geraltmap1k.png"));
+
+  // DEBUG print pixel buffer contents to file
+  /*
+  std::ofstream debug_file(m_resource_path + "../DEBUG.txt");
+  debug_file << "DEBUG:\n";
+  int len = earth_texture_data->pixels.size();
+  debug_file << "Lenght: " << len << "\n";
+  for (int i = 0; i < len / 4; ++i)
+  {
+    std::string temp{ "Pixel " + std::to_string(i) + " (" + std::to_string(i % 1000) + "x" + std::to_string(i / 1000) + "): " };
+    debug_file << temp;
+    for (int j = temp.size(); j < 22; ++j) { debug_file << " "; }
+    debug_file
+      << (int)earth_texture_data->pixels[i * 4 + 0] << " "
+      << (int)earth_texture_data->pixels[i * 4 + 1] << " "
+      << (int)earth_texture_data->pixels[i * 4 + 2] << "\n";
+  }
+  debug_file << "Lenght: " << len << "\n";
+  */
 
   // Initialize texture
   glActiveTexture(GL_TEXTURE0);                               // Activate and select 0 as the Texture Unit which subsequent texture state calls will affect
-  glGenTextures(1, &earth_texture.handle);                    // Generate the texture object as GLuint (acts as a pointer)
+  glGenTextures(1, &earth_texture.handle);                    // Generate the texture object as GLuint (acts as a pointer / referenceID)
   glBindTexture(earth_texture.target, earth_texture.handle);  // Bind texture to texturing target (basically determines texture dimension)
-
+    
   // Define texture sampling parameters
   glTexParameteri(earth_texture.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MIN_FILTER to GL_LINEAR
-                                                                            // -> minimifaction filter will perform a linear blend between samples to get the end color
+                                                                            // -> minification filter will perform a linear blend between samples to get the end color
   glTexParameteri(earth_texture.target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
                                                                             // -> magnification filter will perform a linear blend between samples to get the end color
 
   // Define texture data and format
   glTexImage2D(earth_texture.target,      // Texturing target (binding point of the texture)
                0,                         // Level of detail number (0 for only base image)
-               GL_RGB,                    // Number of color components
+               GL_RGBA8,                  // Color format for the texture (number of color components)
                1000,                      // Width
                500,                       // Height
                0,                         // Border thickness (must be 0 (cool parameter bro))
-               GL_RGB,                    // Format of texel data
-               GL_UNSIGNED_BYTE,          // Data type of texel data (mostly precision)
-               earth_texture_data.ptr()); // Pointer to texture data in memory
-
+               GL_RGBA,                   // Format of source file data
+               GL_UNSIGNED_BYTE,          // Data type of source file (mostly precision)
+               earth_texture_data->ptr());// Pointer to texture data in memory
 }
 
 
@@ -361,7 +384,7 @@ void ApplicationSolar::initializeTextures()
 void ApplicationSolar::initializeGeometry()
 {
   // Sphere:
-  model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL);
+  model planet_model = model_loader::obj(m_resource_path + "models/sphere.obj", model::NORMAL | model::TEXCOORD);
 
   // Generate vertex array object
   glGenVertexArrays(1, &planet_object.vertex_AO);
@@ -377,12 +400,16 @@ void ApplicationSolar::initializeGeometry()
 
   // Activate first attribute on GPU
   glEnableVertexAttribArray(0);
-  // First attribute is 3 floats with no offset & stride
+  // First attribute (in_Position) is 3 floats
   glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::POSITION]);
   // Activate second attribute on GPU
   glEnableVertexAttribArray(1);
-  // Second attribute is 3 floats with no offset & stride
+  // Second attribute (in_Normal) is 3 floats
   glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::NORMAL]);
+  // Activate third attribute on GPU
+  glEnableVertexAttribArray(2);
+  // Third attribute (in_TexCoord) is 2 floats
+  glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, planet_model.vertex_bytes, planet_model.offsets[model::TEXCOORD]);
 
   // Generate generic buffer
   glGenBuffers(1, &planet_object.element_BO);

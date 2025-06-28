@@ -3,6 +3,7 @@
 // In variables
 in vec3 pass_Normal;
 in vec3 pass_Pos;
+in vec2 pass_TexCoord;
 
 // Uniforms
 // (vectors need a constant size, so I just set it to 128 even though probably
@@ -11,10 +12,13 @@ uniform int LightCount;
 uniform vec3 LightPositions[128];
 uniform vec3 LightColors[128];
 uniform float LightIntensities[128];
+
 uniform vec3 ObjColor;
 uniform vec3 CamPos;
 uniform int IsCelShading;
 uniform float Scale;
+
+uniform sampler2D TextureColor;
 
 // Out variables
 out vec4 out_Color;
@@ -72,6 +76,10 @@ void main()
 
   // ########### FINAL COLOR: #######################################
   out_Color = vec4(ambient + diffuse + specular, 1.0f);
+  
+  // DEBUG Texture test
+  vec4 tex_sample_color = texture2D(TextureColor, pass_TexCoord);
+  out_Color = tex_sample_color;
   
 
   // ########### CEL SHADING: #######################################
