@@ -48,9 +48,6 @@ class ApplicationSolar : public Application {
   model_object planet_object;
   model_object stars_object;
   model_object circle_object;
-
-// Texture objects (CPU representation of textures)
-  texture_object earth_texture;
   
   // Camera transform matrix
   glm::fmat4 m_view_transform;

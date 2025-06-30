@@ -49,6 +49,8 @@ class Application {
 
   // Container for the shader programs
   std::map<std::string, shader_program> m_shaders{};
+  // Container for the textures
+  std::map<std::string, texture_object> m_textures{};
 
   // Resolution when 
   static const glm::uvec2 initial_resolution; 

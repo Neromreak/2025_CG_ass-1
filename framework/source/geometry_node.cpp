@@ -39,7 +39,7 @@ void GeometryNode::render(std::map<std::string, shader_program> const* shaders, 
 
 
   // Actual rendering:
-  if (get_name() == "Sun")
+  if (get_name() == "Sun" && false) // DEBUG delete sun shader?
   {
     // Bind shader to upload uniforms
     glUseProgram(shaders->at("sun").handle);
@@ -75,14 +75,12 @@ void GeometryNode::render(std::map<std::string, shader_program> const* shaders, 
     float scale_x = glm::length(glm::vec3(get_local_transform()[0]));
     glUniform1f(shaders->at("planet").u_locs.at("Scale"), scale_x);
 
-    if (get_name() == "Earth")
-    {
-      // Select texture unit
-      glActiveTexture(GL_TEXTURE0);
-      // Bind texture object
-      glBindTexture(texture_->target, texture_->handle);
-      glUniform1i(shaders->at("planet").u_locs.at("TextureColor"), 0 );
-    }
+
+    // Select texture unit
+    glActiveTexture(GL_TEXTURE0);
+    // Bind texture object
+    glBindTexture(texture_->target, texture_->handle);
+    glUniform1i(shaders->at("planet").u_locs.at("TextureColor"), 0 );
   }
 
   // Bind the VAO to draw
