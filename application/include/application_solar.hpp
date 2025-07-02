@@ -49,6 +49,7 @@ class ApplicationSolar : public Application {
   model_object cube_object;
   model_object stars_object;
   model_object circle_object;
+  model_object spacestation_object;
 
   // Skybox texture
   texture_object skybox_texture;

@@ -769,6 +769,24 @@ void ApplicationSolar::initializeTextures()
   glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
 
 
+  // Load spacestation texture:
+  m_textures.emplace("spacestation", texture_object{});
+  texture = &m_textures.at("spacestation");
+  texture->target = GL_TEXTURE_2D;
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/spacestationmap1k.png"));
+
+  // Initialize texture
+  glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
+  glBindTexture(texture->target, texture->handle);  // Bind texture to texturing target (basically determines texture dimension)
+
+  // Define texture sampling parameters
+  glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MIN_FILTER to GL_LINEAR
+  glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
+
+  // Define texture data and format
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+
+
   // Load skybox texture:
   skybox_texture = texture_object{};
   skybox_texture.target = GL_TEXTURE_CUBE_MAP;
@@ -933,6 +951,48 @@ void ApplicationSolar::initializeGeometry()
   cube_object.draw_mode = GL_TRIANGLES;
   // Transfer number of indices to model object 
   cube_object.num_elements = GLsizei(cube_model.indices.size());
+
+
+  // Space station:
+  model spacestation_model = model_loader::obj(m_resource_path + "models/spacestation.obj");
+
+  // Generate vertex array object
+  glGenVertexArrays(1, &spacestation_object.vertex_AO);
+  // Bind the array for attaching buffers
+  glBindVertexArray(spacestation_object.vertex_AO);
+
+  // Generate generic buffer
+  glGenBuffers(1, &spacestation_object.vertex_BO);
+  // Bind this as an vertex array buffer containing all attributes
+  glBindBuffer(GL_ARRAY_BUFFER, spacestation_object.vertex_BO);
+  // Configure currently bound array buffer
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float)* spacestation_model.data.size(), spacestation_model.data.data(), GL_STATIC_DRAW);
+
+  // Activate first attribute on GPU
+  glEnableVertexAttribArray(0);
+  // First attribute (in_Position) is 3 floats
+  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, spacestation_model.vertex_bytes, spacestation_model.offsets[model::POSITION]);
+  // Activate second attribute on GPU
+  glEnableVertexAttribArray(1);
+  // Second attribute (in_Normal) is 3 floats
+  glVertexAttribPointer(1, model::NORMAL.components, model::NORMAL.type, GL_FALSE, spacestation_model.vertex_bytes, spacestation_model.offsets[model::NORMAL]);
+  // Activate third attribute on GPU
+  glEnableVertexAttribArray(2);
+  // Third attribute (in_TexCoord) is 2 floats
+  glVertexAttribPointer(2, model::TEXCOORD.components, model::TEXCOORD.type, GL_FALSE, spacestation_model.vertex_bytes, spacestation_model.offsets[model::TEXCOORD]);
+
+
+  // Generate generic buffer
+  glGenBuffers(1, &spacestation_object.element_BO);
+  // Bind this as a vertex array buffer containing all attributes
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, spacestation_object.element_BO);
+  // Configure currently bound array buffer
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size* spacestation_model.indices.size(), spacestation_model.indices.data(), GL_STATIC_DRAW);
+
+  // Store type of primitive to draw
+  spacestation_object.draw_mode = GL_TRIANGLES;
+  // Transfer number of indices to model object 
+  spacestation_object.num_elements = GLsizei(spacestation_model.indices.size());
 
 
   // Unbind VA
@@ -1115,9 +1175,9 @@ void ApplicationSolar::initializeScene()
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.19f });
   GeometryNode* jup2 = new GeometryNode{ "Jupiter moon 2", holder_jup2, {}, local_transform, glm::fmat4{}, 1.0f * SIMULATION_SPEED,
                                         &planet_object, glm::vec3{ 1.0f }, &m_textures.at("deathstar"), nullptr, &m_textures.at("deathstar_normal")};
-  local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.14f });
+  local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.60f });
   GeometryNode* jup3 = new GeometryNode{ "Jupiter moon 3", holder_jup3, {}, local_transform, glm::fmat4{}, 0.0f * SIMULATION_SPEED,
-                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("pluto") };
+                                        &spacestation_object, glm::vec3{ 1.0f }, &m_textures.at("spacestation") };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.09f });
   GeometryNode* jup4 = new GeometryNode{ "Jupiter moon 4", holder_jup4, {}, local_transform, glm::fmat4{}, 2.0f * SIMULATION_SPEED,
                                         &planet_object, glm::vec3{ 1.0f }, &m_textures.at("pluto") };
