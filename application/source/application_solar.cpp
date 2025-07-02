@@ -433,12 +433,46 @@ void ApplicationSolar::initializeTextures()
                GL_UNSIGNED_BYTE,      // Data type of source file (mostly precision)
                texture_data.ptr());  // Pointer to texture data in memory
 
+  // Load mercury texture normal:
+  m_textures.emplace("mercury_normal", texture_object{});
+  texture = &m_textures.at("mercury_normal");
+  texture->target = GL_TEXTURE_2D;
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/mercurynormal1k.png"));
+
+  // Initialize texture
+  glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
+  glBindTexture(texture->target, texture->handle);  // Bind texture to texturing target (basically determines texture dimension)
+
+  // Define texture sampling parameters
+  glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MIN_FILTER to GL_LINEAR
+  glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
+
+  // Define texture data and format
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+
 
   // Load venus texture:
   m_textures.emplace("venus", texture_object{});
   texture = &m_textures.at("venus");
   texture->target = GL_TEXTURE_2D;
   texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/venusmap1k.png"));
+
+  // Initialize texture
+  glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
+  glBindTexture(texture->target, texture->handle);  // Bind texture to texturing target (basically determines texture dimension)
+
+  // Define texture sampling parameters
+  glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MIN_FILTER to GL_LINEAR
+  glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
+
+  // Define texture data and format
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+
+  // Load venus texture normal:
+  m_textures.emplace("venus_normal", texture_object{});
+  texture = &m_textures.at("venus_normal");
+  texture->target = GL_TEXTURE_2D;
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/venusnormal1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -486,12 +520,46 @@ void ApplicationSolar::initializeTextures()
   // Define texture data and format
   glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
   
+  // Load earth texture normal:
+  m_textures.emplace("earth_normal", texture_object{});
+  texture = &m_textures.at("earth_normal");
+  texture->target = GL_TEXTURE_2D;
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/earthnormal1k.png"));
+
+  // Initialize texture
+  glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
+  glBindTexture(texture->target, texture->handle);  // Bind texture to texturing target (basically determines texture dimension)
+
+  // Define texture sampling parameters
+  glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MIN_FILTER to GL_LINEAR
+  glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
+
+  // Define texture data and format
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+
   
   // Load moon texture:
   m_textures.emplace("moon", texture_object{});
   texture = &m_textures.at("moon");
   texture->target = GL_TEXTURE_2D;
   texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/moonmap1k.png"));
+
+  // Initialize texture
+  glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
+  glBindTexture(texture->target, texture->handle);  // Bind texture to texturing target (basically determines texture dimension)
+
+  // Define texture sampling parameters
+  glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MIN_FILTER to GL_LINEAR
+  glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
+
+  // Define texture data and format
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+
+  // Load moon texture normal:
+  m_textures.emplace("moon_normal", texture_object{});
+  texture = &m_textures.at("moon_normal");
+  texture->target = GL_TEXTURE_2D;
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/moonnormal1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -671,6 +739,23 @@ void ApplicationSolar::initializeTextures()
   texture = &m_textures.at("deathstar");
   texture->target = GL_TEXTURE_2D;
   texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/deathstarmap1k.png"));
+
+  // Initialize texture
+  glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
+  glBindTexture(texture->target, texture->handle);  // Bind texture to texturing target (basically determines texture dimension)
+
+  // Define texture sampling parameters
+  glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MIN_FILTER to GL_LINEAR
+  glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
+
+  // Define texture data and format
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+
+  // Load deathstar texture normal:
+  m_textures.emplace("deathstar_normal", texture_object{});
+  texture = &m_textures.at("deathstar_normal");
+  texture->target = GL_TEXTURE_2D;
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/deathstarnormal1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -1000,20 +1085,20 @@ void ApplicationSolar::initializeScene()
   // Mercury
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.35f });
   GeometryNode* mer = new GeometryNode{ "Mercury", holder_mer, {}, local_transform, glm::fmat4{}, 2.0f * SIMULATION_SPEED,
-                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("mercury") };
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("mercury"), nullptr, &m_textures.at("mercury_normal")};
 
   // Venus
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.8f });
   GeometryNode* ven = new GeometryNode{ "Venus", holder_ven, {}, local_transform, glm::fmat4{}, -3.0f * SIMULATION_SPEED,
-                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("venus") };
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("venus"), nullptr, &m_textures.at("venus_normal") };
 
   // Earth and moon
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.8f });
   GeometryNode* ear = new GeometryNode{ "Earth", holder_ear, {}, local_transform, glm::fmat4{}, 4.0f * SIMULATION_SPEED,
-                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("earth"), &m_textures.at("earth_spec"), nullptr};
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("earth"), &m_textures.at("earth_spec"), &m_textures.at("earth_normal")};
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.25f });
   GeometryNode* moo = new GeometryNode{ "Moon", holder_moo, {}, local_transform, glm::fmat4{}, 0.0f * SIMULATION_SPEED,
-                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("moon") };
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("moon"), nullptr, &m_textures.at("moon_normal") };
 
   // Mars
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.45f });
@@ -1029,7 +1114,7 @@ void ApplicationSolar::initializeScene()
                                         &planet_object, glm::vec3{ 1.0f }, &m_textures.at("geralt") };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.19f });
   GeometryNode* jup2 = new GeometryNode{ "Jupiter moon 2", holder_jup2, {}, local_transform, glm::fmat4{}, 1.0f * SIMULATION_SPEED,
-                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("deathstar") };
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("deathstar"), nullptr, &m_textures.at("deathstar_normal")};
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.14f });
   GeometryNode* jup3 = new GeometryNode{ "Jupiter moon 3", holder_jup3, {}, local_transform, glm::fmat4{}, 0.0f * SIMULATION_SPEED,
                                         &planet_object, glm::vec3{ 1.0f }, &m_textures.at("pluto") };
