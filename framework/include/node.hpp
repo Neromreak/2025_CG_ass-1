@@ -44,6 +44,7 @@ public:
   void set_world_transform(glm::fmat4 const&);
   void add_children(Node*);
   Node* remove_children(std::string const&);
+  float get_animation() const;
 
   // Methods
   virtual void render(std::map<std::string, shader_program> const* shaders, glm::fmat4 const* view_transform, glm::fmat4 transform) const;

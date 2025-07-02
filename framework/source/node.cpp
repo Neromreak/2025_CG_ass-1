@@ -124,6 +124,10 @@ Node* Node::remove_children(std::string const& child_name)
   }
   return nullptr;
 }
+float Node::get_animation() const
+{
+  return animation_;
+}
 
 
 // Methods

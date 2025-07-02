@@ -157,14 +157,39 @@ void ApplicationSolar::render() const
     render_first_frame();
   }
 
+  // Render skybox (Ass4):
+  // ...(is done before the scene but without depth info); (Tutorial I used as assistance: https://learnopengl.com/Advanced-OpenGL/Cubemaps)
+  glDepthMask(GL_FALSE);
+  // Bind cube shader
+  glUseProgram(m_shaders.at("skybox").handle);
+
+  // Texture 'color'
+  // Select texture unit
+  glActiveTexture(GL_TEXTURE0);
+  // Bind texture object
+  glBindTexture(skybox_texture.target, skybox_texture.handle);
+  glUniform1i(m_shaders.at("skybox").u_locs.at("TextureColor"), 0);
+
+  // Bind the VAO to draw
+  glBindVertexArray(cube_object.vertex_AO);
+  // Draw bound vertex array using bound shader
+  glDrawElements(cube_object.draw_mode, cube_object.num_elements, model::INDEX.type, NULL);
+
+  // Unbind VA
+  glBindVertexArray(0);
+  // Reactivate depth mas so that everything else is drawn on top of the skybox
+  glDepthMask(GL_TRUE);
+
+  
   // Traverse the scene graph tree
   scene->get_root()->render(&m_shaders, &m_view_transform, scene->get_root()->get_world_transform());
+
 
   // Render Stars (Ass2):
   // Bind shader
   glUseProgram(m_shaders.at("vao").handle);
   
-  // Upload Identity matrix as ModelMatrix for stars (no transformation as all stars are on object)
+  // Upload Identity matrix as ModelMatrix for stars (no transformation as all stars are one object)
   glUniformMatrix4fv(m_shaders.at("vao").u_locs.at("ModelMatrix"),
                       1, GL_FALSE, glm::value_ptr(glm::fmat4{}));
 
@@ -231,39 +256,49 @@ void ApplicationSolar::uploadView() {
   // Vertices are transformed in camera space, so camera transform must be inverted
   glm::fmat4 view_matrix = glm::inverse(m_view_transform);
   // Upload matrix to gpu
-  // Bind and upload planet shader
+  // Bind and upload to planet shader
   glUseProgram(m_shaders.at("planet").handle);
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(view_matrix));
 
-  // Bind and upload sun shader
+  // Bind and upload to sun shader
   glUseProgram(m_shaders.at("sun").handle);
   glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(view_matrix));
 
-  // Bind and upload vao shader
+  // Bind and upload to vao shader
   glUseProgram(m_shaders.at("vao").handle);
   glUniformMatrix4fv(m_shaders.at("vao").u_locs.at("ViewMatrix"),
+                     1, GL_FALSE, glm::value_ptr(view_matrix));
+
+  // Bind and upload to skybox shader
+  glUseProgram(m_shaders.at("skybox").handle);
+  glUniformMatrix4fv(m_shaders.at("skybox").u_locs.at("ViewMatrix"),
                      1, GL_FALSE, glm::value_ptr(view_matrix));
 }
 
 
 void ApplicationSolar::uploadProjection() {
   // Upload matrix to gpu
-  // Bind and upload planet shader
+  // Bind and upload to planet shader
   glUseProgram(m_shaders.at("planet").handle);
   glUniformMatrix4fv(m_shaders.at("planet").u_locs.at("ProjectionMatrix"),
                      1, GL_FALSE, glm::value_ptr(m_view_projection));
 
-  // Bind and upload sun shader
+  // Bind and upload to sun shader
   glUseProgram(m_shaders.at("sun").handle);
   glUniformMatrix4fv(m_shaders.at("sun").u_locs.at("ProjectionMatrix"),
-    1, GL_FALSE, glm::value_ptr(m_view_projection));
+                     1, GL_FALSE, glm::value_ptr(m_view_projection));
 
-  // Bind and upload vao shader
+  // Bind and upload to vao shader
   glUseProgram(m_shaders.at("vao").handle);
   glUniformMatrix4fv(m_shaders.at("vao").u_locs.at("ProjectionMatrix"),
-    1, GL_FALSE, glm::value_ptr(m_view_projection));
+                     1, GL_FALSE, glm::value_ptr(m_view_projection));
+
+  // Bind and upload to skybox shader
+  glUseProgram(m_shaders.at("skybox").handle);
+  glUniformMatrix4fv(m_shaders.at("skybox").u_locs.at("ProjectionMatrix"),
+                     1, GL_FALSE, glm::value_ptr(m_view_projection));
 }
 
 
@@ -301,6 +336,10 @@ void ApplicationSolar::initializeShaderPrograms()
   m_shaders.at("planet").u_locs["Scale"] = -1;
   
   m_shaders.at("planet").u_locs["TextureColor"] = -1;
+  m_shaders.at("planet").u_locs["TextureSpecular"] = -1;
+  m_shaders.at("planet").u_locs["TextureSpecularIsSet"] = -1;
+  m_shaders.at("planet").u_locs["TextureNormal"] = -1;
+  m_shaders.at("planet").u_locs["TextureNormalIsSet"] = -1;
 
 
   // Sun shader:
@@ -317,6 +356,8 @@ void ApplicationSolar::initializeShaderPrograms()
   m_shaders.at("sun").u_locs["IsCelShading"] = -1;
   m_shaders.at("sun").u_locs["Scale"] = -1;
 
+  m_shaders.at("sun").u_locs["TextureColor"] = -1;
+
 
   // VAO shader:
   // Store shader program objects in container
@@ -326,6 +367,17 @@ void ApplicationSolar::initializeShaderPrograms()
   m_shaders.at("vao").u_locs["ModelMatrix"] = -1;
   m_shaders.at("vao").u_locs["ViewMatrix"] = -1;
   m_shaders.at("vao").u_locs["ProjectionMatrix"] = -1;
+
+
+  // Skybox shader:
+  // Store shader program objects in container
+  m_shaders.emplace("skybox", shader_program{ {{GL_VERTEX_SHADER,m_resource_path + "shaders/skybox.vert"},
+                                           {GL_FRAGMENT_SHADER, m_resource_path + "shaders/skybox.frag"}} });
+  // Request uniform locations for shader program
+  m_shaders.at("skybox").u_locs["ViewMatrix"] = -1;
+  m_shaders.at("skybox").u_locs["ProjectionMatrix"] = -1;
+
+  m_shaders.at("skybox").u_locs["TextureColor"] = -1;
 }
 
 
@@ -337,7 +389,7 @@ void ApplicationSolar::initializeTextures()
   texture_object* texture = &m_textures.at("mercury");
   texture->target = GL_TEXTURE_2D;
   // 24bit PNG worked. JPG has some issues where the buffer size doesn't account for the alpha values but still puts alpha in the buffer
-  pixel_data* texture_data_mercury = new pixel_data(texture_loader::file(m_resource_path + "textures/mercurymap1k.png"));
+  pixel_data texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/mercurymap1k.png"));
 
   // DEBUG print pixel buffer contents to file
   /*
@@ -370,22 +422,22 @@ void ApplicationSolar::initializeTextures()
                                                                       // -> magnification filter will perform a linear blend between samples to get the end color
 
   // Define texture data and format
-  glTexImage2D(texture->target,             // Texturing target (binding point of the texture)
-               0,                           // Level of detail number (0 for only base image)
-               GL_RGBA8,                    // Color format for the texture (number of color components)
-               1000,                        // Width
-               500,                         // Height
-               0,                           // Border thickness (must be 0 (cool parameter bro))
-               GL_RGBA,                     // Format of source file data
-               GL_UNSIGNED_BYTE,            // Data type of source file (mostly precision)
-               texture_data_mercury->ptr());// Pointer to texture data in memory
+  glTexImage2D(texture->target,       // Texturing target (binding point of the texture)
+               0,                     // Level of detail number (0 for only base image)
+               GL_RGBA8,              // Color format for the texture (number of color components)
+               1000,                  // Width
+               500,                   // Height
+               0,                     // Border thickness (must be 0 (cool parameter bro))
+               GL_RGBA,               // Format of source file data
+               GL_UNSIGNED_BYTE,      // Data type of source file (mostly precision)
+               texture_data.ptr());  // Pointer to texture data in memory
 
 
   // Load venus texture:
   m_textures.emplace("venus", texture_object{});
   texture = &m_textures.at("venus");
   texture->target = GL_TEXTURE_2D;
-  pixel_data* texture_data_venus = new pixel_data(texture_loader::file(m_resource_path + "textures/venusmap1k.png"));
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/venusmap1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -396,14 +448,14 @@ void ApplicationSolar::initializeTextures()
   glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
 
   // Define texture data and format
-  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data_venus->ptr());
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
 
 
-  // Load earth texture:
+  // Load earth texture color:
   m_textures.emplace("earth", texture_object{});
   texture = &m_textures.at("earth");
   texture->target = GL_TEXTURE_2D;
-  pixel_data* texture_data_earth = new pixel_data(texture_loader::file(m_resource_path + "textures/earthmap1k.png"));
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/earthmap1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -414,14 +466,31 @@ void ApplicationSolar::initializeTextures()
   glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
 
   // Define texture data and format
-  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data_earth->ptr());
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+
+  // Load earth texture specular:
+  m_textures.emplace("earth_spec", texture_object{});
+  texture = &m_textures.at("earth_spec");
+  texture->target = GL_TEXTURE_2D;
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/earthspec1k.png"));
+
+  // Initialize texture
+  glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
+  glBindTexture(texture->target, texture->handle);  // Bind texture to texturing target (basically determines texture dimension)
+
+  // Define texture sampling parameters
+  glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MIN_FILTER to GL_LINEAR
+  glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
+
+  // Define texture data and format
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
   
   
   // Load moon texture:
   m_textures.emplace("moon", texture_object{});
   texture = &m_textures.at("moon");
   texture->target = GL_TEXTURE_2D;
-  pixel_data* texture_data_moon = new pixel_data(texture_loader::file(m_resource_path + "textures/moonmap1k.png"));
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/moonmap1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -432,14 +501,14 @@ void ApplicationSolar::initializeTextures()
   glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
 
   // Define texture data and format
-  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data_moon->ptr());
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
 
 
   // Load mars texture:
   m_textures.emplace("mars", texture_object{});
   texture = &m_textures.at("mars");
   texture->target = GL_TEXTURE_2D;
-  pixel_data* texture_data_mars = new pixel_data(texture_loader::file(m_resource_path + "textures/marsmap1k.png"));
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/marsmap1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -450,14 +519,14 @@ void ApplicationSolar::initializeTextures()
   glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
 
   // Define texture data and format
-  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data_mars->ptr());
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
 
 
   // Load jupiter texture:
   m_textures.emplace("jupiter", texture_object{});
   texture = &m_textures.at("jupiter");
   texture->target = GL_TEXTURE_2D;
-  pixel_data* texture_data_jupiter = new pixel_data(texture_loader::file(m_resource_path + "textures/jupitermap1k.png"));
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/jupitermap1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -468,14 +537,14 @@ void ApplicationSolar::initializeTextures()
   glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
 
   // Define texture data and format
-  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data_jupiter->ptr());
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
 
 
   // Load saturn texture:
   m_textures.emplace("saturn", texture_object{});
   texture = &m_textures.at("saturn");
   texture->target = GL_TEXTURE_2D;
-  pixel_data* texture_data_saturn = new pixel_data(texture_loader::file(m_resource_path + "textures/saturnmap1k.png"));
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/saturnmap1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -486,14 +555,14 @@ void ApplicationSolar::initializeTextures()
   glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
 
   // Define texture data and format
-  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data_saturn->ptr());
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
 
 
   // Load uranus texture:
   m_textures.emplace("uranus", texture_object{});
   texture = &m_textures.at("uranus");
   texture->target = GL_TEXTURE_2D;
-  pixel_data* texture_data_uranus = new pixel_data(texture_loader::file(m_resource_path + "textures/uranusmap1k.png"));
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/uranusmap1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -504,14 +573,14 @@ void ApplicationSolar::initializeTextures()
   glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
 
   // Define texture data and format
-  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data_uranus->ptr());
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
 
 
   // Load neptune texture:
   m_textures.emplace("neptune", texture_object{});
   texture = &m_textures.at("neptune");
   texture->target = GL_TEXTURE_2D;
-  pixel_data* texture_data_neptune = new pixel_data(texture_loader::file(m_resource_path + "textures/neptunemap1k.png"));
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/neptunemap1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -522,14 +591,14 @@ void ApplicationSolar::initializeTextures()
   glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
 
   // Define texture data and format
-  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data_neptune->ptr());
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
 
 
   // Load pluto texture:
   m_textures.emplace("pluto", texture_object{});
   texture = &m_textures.at("pluto");
   texture->target = GL_TEXTURE_2D;
-  pixel_data* texture_data_pluto = new pixel_data(texture_loader::file(m_resource_path + "textures/plutomap1k.png"));
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/plutomap1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -540,14 +609,14 @@ void ApplicationSolar::initializeTextures()
   glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
 
   // Define texture data and format
-  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data_pluto->ptr());
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
 
 
   // Load sun texture:
   m_textures.emplace("sun", texture_object{});
   texture = &m_textures.at("sun");
   texture->target = GL_TEXTURE_2D;
-  pixel_data* texture_data_sun = new pixel_data(texture_loader::file(m_resource_path + "textures/sunmap1k.png"));
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/sunmap1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -558,14 +627,14 @@ void ApplicationSolar::initializeTextures()
   glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
 
   // Define texture data and format
-  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data_sun->ptr());
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
 
 
   // Load geralt texture:
   m_textures.emplace("geralt", texture_object{});
   texture = &m_textures.at("geralt");
   texture->target = GL_TEXTURE_2D;
-  pixel_data* texture_data_geralt = new pixel_data(texture_loader::file(m_resource_path + "textures/geraltmap1k.png"));
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/geraltmap1k.png"));
 
   // Initialize texture
   glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
@@ -576,7 +645,49 @@ void ApplicationSolar::initializeTextures()
   glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
 
   // Define texture data and format
-  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data_geralt->ptr());
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+
+
+  // Load deathstar texture:
+  m_textures.emplace("deathstar", texture_object{});
+  texture = &m_textures.at("deathstar");
+  texture->target = GL_TEXTURE_2D;
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/deathstarmap1k.png"));
+
+  // Initialize texture
+  glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
+  glBindTexture(texture->target, texture->handle);  // Bind texture to texturing target (basically determines texture dimension)
+
+  // Define texture sampling parameters
+  glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MIN_FILTER to GL_LINEAR
+  glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
+
+  // Define texture data and format
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+
+
+  // Load skybox texture:
+  skybox_texture = texture_object{};
+  skybox_texture.target = GL_TEXTURE_CUBE_MAP;
+
+  // Initialize texture
+  glGenTextures(1, &skybox_texture.handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
+  glBindTexture(skybox_texture.target, skybox_texture.handle);  // Bind texture to texturing target (basically determines texture dimension)
+
+  // Define texture sampling parameters
+  glTexParameteri(skybox_texture.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MIN_FILTER to GL_LINEAR
+  glTexParameteri(skybox_texture.target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
+
+  // Define texture data and format
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/skybox1map2k.png"));
+  glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA8, 2000, 2000, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+  glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA8, 2000, 2000, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+  glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA8, 2000, 2000, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+  
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/skybox2map2k.png"));
+  glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA8, 2000, 2000, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+  glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA8, 2000, 2000, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+  glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA8, 2000, 2000, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
 }
 
 
@@ -686,6 +797,39 @@ void ApplicationSolar::initializeGeometry()
   circle_object.draw_mode = GL_LINE_LOOP;
   // Transfer number of indices to model object 
   circle_object.num_elements = GLsizei(circle_model.size() / 6);
+
+
+  // Cube:
+  model cube_model = model_loader::obj(m_resource_path + "models/cube.obj");
+
+  // Generate vertex array object
+  glGenVertexArrays(1, &cube_object.vertex_AO);
+  // Bind the array for attaching buffers
+  glBindVertexArray(cube_object.vertex_AO);
+
+  // Generate generic buffer
+  glGenBuffers(1, &cube_object.vertex_BO);
+  // Bind this as an vertex array buffer containing all attributes
+  glBindBuffer(GL_ARRAY_BUFFER, cube_object.vertex_BO);
+  // Configure currently bound array buffer
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float)* cube_model.data.size(), cube_model.data.data(), GL_STATIC_DRAW);
+
+  // Activate first attribute on GPU
+  glEnableVertexAttribArray(0);
+  // First attribute (in_Position) is 3 floats
+  glVertexAttribPointer(0, model::POSITION.components, model::POSITION.type, GL_FALSE, cube_model.vertex_bytes, cube_model.offsets[model::POSITION]);
+
+  // Generate generic buffer
+  glGenBuffers(1, &cube_object.element_BO);
+  // Bind this as a vertex array buffer containing all attributes
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cube_object.element_BO);
+  // Configure currently bound array buffer
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, model::INDEX.size* cube_model.indices.size(), cube_model.indices.data(), GL_STATIC_DRAW);
+
+  // Store type of primitive to draw
+  cube_object.draw_mode = GL_TRIANGLES;
+  // Transfer number of indices to model object 
+  cube_object.num_elements = GLsizei(cube_model.indices.size());
 
 
   // Unbind VA
@@ -834,73 +978,73 @@ void ApplicationSolar::initializeScene()
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 44.0f });
   Node* holder_nep = new Node{ "Neptune Holder", root, local_transform, glm::fmat4{}, 0.03f * SIMULATION_SPEED, &circle_object };
   
-  // Add planets to planet holders and apply scale
+  // Add planets (with texture) to planet holders and apply scale
   // Mercury
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.35f });
-  GeometryNode* mer = new GeometryNode{ "Mercury", holder_mer, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 1.0f, 0.5f, 0.5f }, &m_textures.at("mercury") };
+  GeometryNode* mer = new GeometryNode{ "Mercury", holder_mer, {}, local_transform, glm::fmat4{}, 2.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("mercury") };
 
   // Venus
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.8f });
-  GeometryNode* ven = new GeometryNode{ "Venus", holder_ven, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.9f, 0.1f, 0.9f }, &m_textures.at("venus") };
+  GeometryNode* ven = new GeometryNode{ "Venus", holder_ven, {}, local_transform, glm::fmat4{}, -3.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("venus") };
 
   // Earth and moon
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.8f });
-  GeometryNode* ear = new GeometryNode{ "Earth", holder_ear, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.2f, 0.5f, 0.9f }, &m_textures.at("earth") };
+  GeometryNode* ear = new GeometryNode{ "Earth", holder_ear, {}, local_transform, glm::fmat4{}, 4.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("earth"), &m_textures.at("earth_spec"), nullptr};
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.25f });
-  GeometryNode* moo = new GeometryNode{ "Moon", holder_moo, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.5f, 0.5f, 0.5f }, &m_textures.at("moon") };
+  GeometryNode* moo = new GeometryNode{ "Moon", holder_moo, {}, local_transform, glm::fmat4{}, 0.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("moon") };
 
   // Mars
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.45f });
-  GeometryNode* mar = new GeometryNode{ "Mars", holder_mar, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.8f, 0.4f, 0.4f }, &m_textures.at("mars") };
+  GeometryNode* mar = new GeometryNode{ "Mars", holder_mar, {}, local_transform, glm::fmat4{}, 3.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("mars") };
 
   // Jupiter and moons
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.6f });
-  GeometryNode* jup = new GeometryNode{ "Jupiter", holder_jup, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.65f, 0.65f, 0.5f }, &m_textures.at("jupiter") };
+  GeometryNode* jup = new GeometryNode{ "Jupiter", holder_jup, {}, local_transform, glm::fmat4{}, 1.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("jupiter") };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.25f });
-  GeometryNode* jup1 = new GeometryNode{ "Jupiter moon 1", holder_jup1, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.3f, 0.2f, 0.4f }, &m_textures.at("geralt") };
+  GeometryNode* jup1 = new GeometryNode{ "Jupiter moon 1", holder_jup1, {}, local_transform, glm::fmat4{}, 6.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("geralt") };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.19f });
-  GeometryNode* jup2 = new GeometryNode{ "Jupiter moon 2", holder_jup2, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.5f, 0.5f, 0.5f }, &m_textures.at("pluto") };
+  GeometryNode* jup2 = new GeometryNode{ "Jupiter moon 2", holder_jup2, {}, local_transform, glm::fmat4{}, 1.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("deathstar") };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.14f });
-  GeometryNode* jup3 = new GeometryNode{ "Jupiter moon 3", holder_jup3, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.8f, 0.9f, 0.8f }, &m_textures.at("pluto") };
+  GeometryNode* jup3 = new GeometryNode{ "Jupiter moon 3", holder_jup3, {}, local_transform, glm::fmat4{}, 0.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("pluto") };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.09f });
-  GeometryNode* jup4 = new GeometryNode{ "Jupiter moon 4", holder_jup4, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.4f, 0.75f, 0.5f }, &m_textures.at("pluto") };
+  GeometryNode* jup4 = new GeometryNode{ "Jupiter moon 4", holder_jup4, {}, local_transform, glm::fmat4{}, 2.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("pluto") };
 
   // Saturn and moons
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.4f });
-  GeometryNode* sat = new GeometryNode{ "Saturn", holder_sat, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.7f, 0.5f, 0.5f }, &m_textures.at("saturn") };
+  GeometryNode* sat = new GeometryNode{ "Saturn", holder_sat, {}, local_transform, glm::fmat4{}, 0.4f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("saturn") };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.05f });
-  GeometryNode* sat1 = new GeometryNode{ "Saturn moon 1", holder_sat1, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.5f, 0.5f, 0.5f }, &m_textures.at("pluto") };
+  GeometryNode* sat1 = new GeometryNode{ "Saturn moon 1", holder_sat1, {}, local_transform, glm::fmat4{}, 2.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("pluto") };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.2f });
-  GeometryNode* sat2 = new GeometryNode{ "Saturn moon 2", holder_sat2, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.5f, 0.3f, 0.5f }, &m_textures.at("pluto") };
+  GeometryNode* sat2 = new GeometryNode{ "Saturn moon 2", holder_sat2, {}, local_transform, glm::fmat4{}, 20.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("pluto") };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.1f });
-  GeometryNode* sat21 = new GeometryNode{ "Saturn moon 2 moon 1", holder_sat21, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.8f, 0.5f, 0.5f }, &m_textures.at("pluto") };
+  GeometryNode* sat21 = new GeometryNode{ "Saturn moon 2 moon 1", holder_sat21, {}, local_transform, glm::fmat4{}, 1.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("pluto") };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.09f });
-  GeometryNode* sat3 = new GeometryNode{ "Saturn moon 3", holder_sat3, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.5f, 0.5f, 0.9f }, &m_textures.at("pluto") };
+  GeometryNode* sat3 = new GeometryNode{ "Saturn moon 3", holder_sat3, {}, local_transform, glm::fmat4{}, 3.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("pluto") };
 
   // Uranus
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.2f });
-  GeometryNode* ura = new GeometryNode{ "Uranus", holder_ura, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.2f, 0.2f, 0.8f }, &m_textures.at("uranus") };
+  GeometryNode* ura = new GeometryNode{ "Uranus", holder_ura, {}, local_transform, glm::fmat4{}, -2.0f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("uranus") };
 
   // Neptune
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.1f });
-  GeometryNode* nep = new GeometryNode{ "Neptune", holder_nep, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{ 0.3f, 0.3f, 0.7f }, &m_textures.at("neptune") };
+  GeometryNode* nep = new GeometryNode{ "Neptune", holder_nep, {}, local_transform, glm::fmat4{}, 2.5f * SIMULATION_SPEED,
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("neptune") };
 
   // Add lighting and sun
   local_transform = glm::translate(glm::fmat4{}, glm::vec3{ 0.0f, 0.0f, 0.0f });
@@ -908,7 +1052,7 @@ void ApplicationSolar::initializeScene()
                                                   glm::vec3{ 1.0f, 1.0f, 1.0f }, 1.0f };
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{3.0f});
   GeometryNode* sun = new GeometryNode{ "Sun", light_sun, local_transform, glm::fmat4{},
-                                        &planet_object, glm::vec3{}, &m_textures.at("sun") };
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("sun") };
 
   // Add camera
   CameraNode* cam_main = new CameraNode{ "Main Camera", root };

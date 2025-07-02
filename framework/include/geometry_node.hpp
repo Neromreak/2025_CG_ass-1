@@ -16,6 +16,9 @@ public:
   GeometryNode(std::string const& name, Node* parent, std::list<Node*> const& children,
     glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, model_object const* geometry,
     glm::vec3 const& color, texture_object const* texture);
+  GeometryNode(std::string const& name, Node* parent, std::list<Node*> const& children,
+    glm::fmat4 const& local_transform, glm::fmat4 const& world_transform, float animation, model_object const* geometry,
+    glm::vec3 const& color, texture_object const* texture, texture_object const* texture_spec, texture_object const* texture_normal);
 
   // Getter Setter
   model_object const* get_model() const;
@@ -28,6 +31,8 @@ public:
 private:
   model_object const* geometry_;
   texture_object const* texture_;
+  texture_object const* texture_spec_;
+  texture_object const* texture_normal_;
   glm::vec3 color_;
 };
 

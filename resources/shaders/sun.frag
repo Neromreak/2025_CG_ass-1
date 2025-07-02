@@ -1,12 +1,20 @@
 #version 150
 
-in  vec3 pass_Normal;
-in  vec3 pass_Pos;
-out vec4 out_Color;
+// In variables
+in vec3 pass_Normal;
+in vec3 pass_Pos;
+in vec2 pass_TexCoord;
 
+// Uniforms
 uniform vec3 CamPos;
 uniform int IsCelShading;
 uniform float Scale;
+
+uniform sampler2D TextureColor;
+
+// Out variables
+out vec4 out_Color;
+
 
 void main()
 {
@@ -18,11 +26,11 @@ void main()
   
   // Beta = angle between surface normal and camera direction
   float cos_beta = max(dot(normal, cam_direction), 0.0f);
-
-  out_Color = vec4(0.8f + cos_beta * 0.5f,
-                   0.3f + cos_beta * 0.6f,
-                   0.1f + cos_beta * 0.4f,
-                   1.0f);
+  
+  vec3 diffuse = vec3(0.9f + cos_beta * 0.5f,
+                   0.4f + cos_beta * 0.6f,
+                   0.2f + cos_beta * 0.4f);
+  out_Color = vec4(diffuse, 1.0f) * texture(TextureColor, pass_TexCoord);
   
 
   // ########### CEL SHADING: #######################################
@@ -40,7 +48,7 @@ void main()
     else
     {
       // Apply color discretization
-      int cel_shade_count = 5;
+      int cel_shade_count = 3;
       vec3 new_Color = vec3(0.0f, 0.0f, 0.0f);
       for(int i = 0; i < 3; ++i)
       {

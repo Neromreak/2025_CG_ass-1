@@ -19,6 +19,10 @@ uniform int IsCelShading;
 uniform float Scale;
 
 uniform sampler2D TextureColor;
+uniform sampler2D TextureSpecular;
+uniform bool TextureSpecularIsSet;
+uniform sampler2D TextureNormal;
+uniform bool TextureNormalIsSet;
 
 // Out variables
 out vec4 out_Color;
@@ -61,26 +65,30 @@ void main()
    
 
     // ########### SPECULAR: ########################################
-    vec3 light_reflect_direction = reflect(-light_direction, normal);
+    if(TextureSpecularIsSet)
+    {
+      vec3 light_reflect_direction = reflect(-light_direction, normal);
 
-    // Alpha = angle between light reflection direction and camera direction
-    float cos_alpha = max(dot(cam_direction, light_reflect_direction), 0.0f);
+      // Alpha = angle between light reflection direction and camera direction
+      float cos_alpha = max(dot(cam_direction, light_reflect_direction), 0.0f);
     
     
-    float specular_exponent = 10.0f;
-    vec3 specular_part = vec3(0.35f, 0.35f, 0.35f) * pow(cos_alpha, specular_exponent);
+      float specular_exponent = 10.0f;
+      vec3 specular_part = vec3(0.5f, 0.5f, 0.5f) * pow(cos_alpha, specular_exponent);
 
-    specular += specular_part * LightIntensities[i];
+      specular += specular_part * LightIntensities[i];
+    }
   }
   
+  // ########### TEXTURE: ###########################################
+  diffuse *= texture(TextureColor, pass_TexCoord).xyz;
+  ambient *= texture(TextureColor, pass_TexCoord).xyz;
+  specular *= texture(TextureSpecular, pass_TexCoord).xyz;
+
 
   // ########### FINAL COLOR: #######################################
   out_Color = vec4(ambient + diffuse + specular, 1.0f);
-  
-  // DEBUG Texture test
-  vec4 tex_sample_color = texture2D(TextureColor, pass_TexCoord);
-  out_Color = tex_sample_color;
-  
+
 
   // ########### CEL SHADING: #######################################
   if(IsCelShading == 1)
@@ -100,7 +108,7 @@ void main()
     else
     {
       // Apply color discretization
-      int cel_shade_count = 5;
+      int cel_shade_count = 3;
       vec3 new_Color = vec3(0.0f, 0.0f, 0.0f);
       for(int i = 0; i < 3; ++i)
       {

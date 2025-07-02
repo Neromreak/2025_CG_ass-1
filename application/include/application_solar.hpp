@@ -46,8 +46,12 @@ class ApplicationSolar : public Application {
 
 // Model objects (CPU representation of model)
   model_object planet_object;
+  model_object cube_object;
   model_object stars_object;
   model_object circle_object;
+
+  // Skybox texture
+  texture_object skybox_texture;
   
   // Camera transform matrix
   glm::fmat4 m_view_transform;
@@ -56,7 +60,7 @@ class ApplicationSolar : public Application {
 
   SceneGraph* scene;
 
-  const float SIMULATION_SPEED = 0.2f;
+  const float SIMULATION_SPEED = 0.18f;
 
   // Variables for input
   float movement_speed = 0.019f;
