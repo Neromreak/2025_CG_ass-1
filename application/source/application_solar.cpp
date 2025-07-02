@@ -122,19 +122,20 @@ void ApplicationSolar::physics()
                                          m_view_transform[3][2] / m_view_transform[3][3] };
 
   // Calculate movement
+  float speed = is_speed_slower ? movement_speed * 0.1f : movement_speed;
   if (move_x != 0)
   {
-    translation_lerp_aim[0] += left_dir_h[0] * movement_speed * move_x * delta_time_ms;
-    translation_lerp_aim[2] += left_dir_h[2] * movement_speed * move_x * delta_time_ms;
+    translation_lerp_aim[0] += left_dir_h[0] * speed * move_x * delta_time_ms;
+    translation_lerp_aim[2] += left_dir_h[2] * speed * move_x * delta_time_ms;
   }
   if (move_y != 0)
   {
-    translation_lerp_aim[1] += movement_speed * move_y * delta_time_ms;
+    translation_lerp_aim[1] += speed * move_y * delta_time_ms;
   }
   if (move_z != 0)
   {
-    translation_lerp_aim[0] += view_dir_h[0] * movement_speed * move_z * delta_time_ms;
-    translation_lerp_aim[2] += view_dir_h[2] * movement_speed * move_z * delta_time_ms;
+    translation_lerp_aim[0] += view_dir_h[0] * speed * move_z * delta_time_ms;
+    translation_lerp_aim[2] += view_dir_h[2] * speed * move_z * delta_time_ms;
   }
 
   // Apply transformation in world space (no local oriented movement)
@@ -1113,6 +1114,14 @@ void ApplicationSolar::keyCallback(GLFWwindow* window, int key, int action, int 
   {
     move_y = 1;
   }
+  if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_REPEAT)
+  {
+    is_speed_slower = true;
+  }
+  else
+  {
+    is_speed_slower = false;
+  }
   if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
   {
     // Switch cel shading off
@@ -1189,6 +1198,7 @@ int main(int argc, char* argv[])
             << "  Use WASD to move around.\n"
             << "  Use QE / SHIFT CTRL to go up and down.\n"
             << "  Use the mouse to move the camera.\n"
+            << "  Hold ALT to move slower.\n"
             << "  Use 1/2 to switch between cel shading and smooth shading.\n";
 
   // Start the render applicaton

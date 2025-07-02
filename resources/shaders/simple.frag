@@ -43,7 +43,7 @@ vec3 perturbNormal(vec3 vertex_pos, vec3 surf_norm)
 
   // Convert normal texture from color space [0,1]*3 into a usable vector [-1,1]*3
   vec3 mapN = texture(TextureNormal, pass_TexCoord).xyz * 2.0 - 1.0;
-  float normalScale = 1.0f;
+  float normalScale = 7.0f;
   mapN.xy = normalScale * mapN.xy ;
   mat3 tsn = mat3(S, T, N);
   // Add normal from texture to current normal

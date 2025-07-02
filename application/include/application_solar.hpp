@@ -69,7 +69,8 @@ class ApplicationSolar : public Application {
   int move_z = 0;
   float rotation_speed = 0.001f;
   float rot_h = 0.0f;
-  float rot_v= 0.0f;
+  float rot_v = 0.0f;
+  bool is_speed_slower = false;
   bool cel_shading = false;
 };
 
