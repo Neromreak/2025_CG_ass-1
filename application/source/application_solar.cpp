@@ -521,6 +521,23 @@ void ApplicationSolar::initializeTextures()
   // Define texture data and format
   glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
 
+  // Load mars normal specular:
+  m_textures.emplace("mars_normal", texture_object{});
+  texture = &m_textures.at("mars_normal");
+  texture->target = GL_TEXTURE_2D;
+  texture_data = pixel_data(texture_loader::file(m_resource_path + "textures/marsnormal1k.png"));
+
+  // Initialize texture
+  glGenTextures(1, &texture->handle);               // Generate the texture object as GLuint (acts as a pointer / referenceID)
+  glBindTexture(texture->target, texture->handle);  // Bind texture to texturing target (basically determines texture dimension)
+
+  // Define texture sampling parameters
+  glTexParameteri(texture->target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MIN_FILTER to GL_LINEAR
+  glTexParameteri(texture->target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);  // Set the parameter TEXTURE_MAG_FILTER to GL_LINEAR
+
+  // Define texture data and format
+  glTexImage2D(texture->target, 0, GL_RGBA8, 1000, 500, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture_data.ptr());
+
 
   // Load jupiter texture:
   m_textures.emplace("jupiter", texture_object{});
@@ -1000,7 +1017,7 @@ void ApplicationSolar::initializeScene()
   // Mars
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 0.45f });
   GeometryNode* mar = new GeometryNode{ "Mars", holder_mar, {}, local_transform, glm::fmat4{}, 3.0f * SIMULATION_SPEED,
-                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("mars") };
+                                        &planet_object, glm::vec3{ 1.0f }, &m_textures.at("mars"), nullptr, &m_textures.at("mars_normal")};
 
   // Jupiter and moons
   local_transform = glm::scale(glm::fmat4{}, glm::vec3{ 1.6f });

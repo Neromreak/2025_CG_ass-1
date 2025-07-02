@@ -28,8 +28,38 @@ uniform bool TextureNormalIsSet;
 out vec4 out_Color;
 
 
+vec3 perturbNormal(vec3 vertex_pos, vec3 surf_norm)
+{
+  // Calculate some derivatives
+  vec3 q0 = dFdx(vertex_pos.xyz);
+  vec3 q1 = dFdy(vertex_pos.xyz);
+  vec2 st0 = dFdx(pass_TexCoord.st);
+  vec2 st1 = dFdy(pass_TexCoord.st);
+
+  // Do some extremely fabulous intricate calculations
+  vec3 S = normalize(q0 * st1.t - q1 * st0.t);
+  vec3 T = normalize(-q0 * st1.s + q1 * st0.s);
+  vec3 N = normalize(surf_norm);
+
+  // Convert normal texture from color space [0,1]*3 into a usable vector [-1,1]*3
+  vec3 mapN = texture(TextureNormal, pass_TexCoord).xyz * 2.0 - 1.0;
+  float normalScale = 1.0f;
+  mapN.xy = normalScale * mapN.xy ;
+  mat3 tsn = mat3(S, T, N);
+  // Add normal from texture to current normal
+  return normalize(tsn * mapN);
+}
+
+
 void main()
 {
+  vec3 normal = pass_Normal;
+  // Apply normal texture if given
+  if (TextureNormalIsSet)
+  {
+    normal = perturbNormal(pass_Pos, pass_Normal);
+  }
+
   // ########### AMBIENT: ###########################################
   float ambient_factor = 0.05f;
   vec3 ambient = vec3(ambient_factor * ObjColor[0],
@@ -38,7 +68,7 @@ void main()
   
 
   // Normalize normal vector
-  vec3 normal = normalize(pass_Normal);
+  normal = normalize(normal);
 
   // Cam direction points towards the camera
   vec3 cam_direction = normalize(CamPos - pass_Pos);
